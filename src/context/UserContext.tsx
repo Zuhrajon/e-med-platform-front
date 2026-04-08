@@ -13,11 +13,13 @@ export type Appointment = {
 export type UserProfile = {
   firstName: string
   lastName: string
+  middleName: string
   email: string
   phone: string
+  gender: string
   birthDate: string
   address: string
-  insurancePolicy: string
+  documentNumber: string
   avatar: string | null
   appointments: Appointment[]
 }
@@ -30,14 +32,16 @@ type UserContextType = {
   cancelAppointment: (id: string) => void
 }
 
-const defaultUser: UserProfile = {
-  firstName: 'Иван',
-  lastName: 'Петров',
-  email: 'vgk@hdsk',
-  phone: '+7 (999) 123-45-67',
+export const defaultUser: UserProfile = {
+  firstName: '',
+  lastName: '',
+  middleName: '',
+  email: '',
+  phone: '',
+  gender: '',
   birthDate: '',
   address: '',
-  insurancePolicy: '',
+  documentNumber: '',
   avatar: null,
   appointments: [],
 }

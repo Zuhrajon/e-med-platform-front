@@ -1,11 +1,20 @@
 import logo from '../assets/react.svg'
 import house from '../assets/card-svg/house.svg'
 import exit from '../assets/card-svg/exit.svg'
-import { NavLink } from 'react-router-dom'
 import { useUser } from '../context/UserContext'
+import { NavLink, useNavigate } from 'react-router-dom'
+
+
 
 function Navigation() {
+  
+  const navigate = useNavigate()
   const { user } = useUser()
+
+  function handleLogout() {
+  navigate('/')
+}
+
   const linkBase =
     'flex items-center gap-2 rounded-2xl px-6 py-2 text-left transition'
 
@@ -33,7 +42,7 @@ function Navigation() {
         <div className="px-6 py-6">
           <div className="flex flex-col gap-1">
             <NavLink
-              to="/"
+              to="/app"
               end
               className={({ isActive }) =>
                 `${linkBase} ${isActive
@@ -47,7 +56,7 @@ function Navigation() {
             </NavLink>
 
             <NavLink
-              to="/doctors"
+              to="/app/doctors"
               className={({ isActive }) =>
                 `${linkBase} ${isActive
                   ? 'bg-sky-700 text-white'
@@ -72,7 +81,7 @@ function Navigation() {
             </NavLink>
 
             <NavLink
-              to="/appointments"
+              to="/app/appointments"
               className={({ isActive }) =>
                 `${linkBase} ${isActive
                   ? 'bg-sky-700 text-white'
@@ -89,7 +98,7 @@ function Navigation() {
             </NavLink>
 
             <NavLink
-              to="/medical-book"
+              to="/app/medical-book"
               className={({ isActive }) =>
                 `${linkBase} ${isActive
                   ? 'bg-sky-700 text-white'
@@ -106,7 +115,7 @@ function Navigation() {
             </NavLink>
 
             <NavLink
-              to="/profile"
+              to="/app/profile"
               className={({ isActive }) =>
                 `${linkBase} ${isActive
                   ? 'bg-sky-700 text-white'
@@ -134,7 +143,7 @@ function Navigation() {
           <h4 className="text-[14px] text-sky-600">{user.email}</h4>
         </div>
 
-        <button className="flex w-full items-center gap-2 rounded-2xl px-5 py-2 text-left text-slate-900 transition hover:bg-sky-700 hover:text-white">
+        <button onClick={handleLogout} className="flex w-full items-center gap-2 rounded-2xl px-5 py-2 text-left text-slate-900 transition hover:bg-sky-700 hover:text-white">
           <img src={exit} alt="" className="h-6 w-6" />
           <span className="text-[15px] font-semibold">Выйти</span>
         </button>
@@ -144,3 +153,4 @@ function Navigation() {
 }
 
 export default Navigation
+

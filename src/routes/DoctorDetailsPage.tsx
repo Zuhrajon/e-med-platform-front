@@ -65,14 +65,14 @@ export default function DoctorDetailsPage() {
             reason: 'Консультация',
         })
 
-        navigate('/appointments')
+        navigate('/app/appointments')
     }
 
     return (
         <div className="min-h-screen bg-[#f7f7f8] px-8 py-10">
             <div className="mx-auto max-w-5xl">
                 <button
-                    onClick={() => navigate('/doctors')}
+                    onClick={() => navigate('/app/doctors')}
                     className="mb-8 text-[18px] font-medium text-slate-900"
                 >
                     ← Назад к врачам

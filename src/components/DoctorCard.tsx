@@ -53,7 +53,7 @@ export default function DoctorCard({ doctor }: DoctorCardProps) {
 
             <button
               type="button"
-              onClick={() => navigate(`/doctors/${doctor.id}`)}
+              onClick={() => navigate(`/app/doctors/${doctor.id}`)}
               className="rounded-2xl bg-sky-500 px-4 py-2.5 text-[15px] font-medium text-white transition hover:bg-sky-600"
             >
               Записаться

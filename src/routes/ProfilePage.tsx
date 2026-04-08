@@ -1,4 +1,4 @@
-import { useRef, useState, type ChangeEvent } from 'react'
+import { useEffect, useRef, useState, type ChangeEvent } from 'react'
 import { useUser } from '../context/UserContext'
 
 export default function ProfilePage() {
@@ -8,14 +8,32 @@ export default function ProfilePage() {
   const [formData, setFormData] = useState({
     firstName: user.firstName,
     lastName: user.lastName,
+    middleName: user.middleName,
     email: user.email,
     phone: user.phone,
+    gender: user.gender,
     birthDate: user.birthDate,
     address: user.address,
-    insurancePolicy: user.insurancePolicy,
+    documentNumber: user.documentNumber,
   })
 
   const fileInputRef = useRef<HTMLInputElement | null>(null)
+
+  useEffect(() => {
+    if (!isEditing) {
+      setFormData({
+        firstName: user.firstName,
+        lastName: user.lastName,
+        middleName: user.middleName,
+        email: user.email,
+        phone: user.phone,
+        gender: user.gender,
+        birthDate: user.birthDate,
+        address: user.address,
+        documentNumber: user.documentNumber,
+      })
+    }
+  }, [user, isEditing])
 
   const initials = `${user.firstName?.[0] || ''}${user.lastName?.[0] || ''}`
 
@@ -23,11 +41,13 @@ export default function ProfilePage() {
     setFormData({
       firstName: user.firstName,
       lastName: user.lastName,
+      middleName: user.middleName,
       email: user.email,
       phone: user.phone,
+      gender: user.gender,
       birthDate: user.birthDate,
       address: user.address,
-      insurancePolicy: user.insurancePolicy,
+      documentNumber: user.documentNumber,
     })
     setIsEditing(true)
   }
@@ -36,21 +56,35 @@ export default function ProfilePage() {
     setFormData({
       firstName: user.firstName,
       lastName: user.lastName,
+      middleName: user.middleName,
       email: user.email,
       phone: user.phone,
+      gender: user.gender,
       birthDate: user.birthDate,
       address: user.address,
-      insurancePolicy: user.insurancePolicy,
+      documentNumber: user.documentNumber,
     })
     setIsEditing(false)
   }
 
   const handleSave = () => {
-    updateUser(formData)
+    updateUser({
+      firstName: formData.firstName,
+      lastName: formData.lastName,
+      middleName: formData.middleName,
+      email: formData.email,
+      phone: formData.phone,
+      gender: formData.gender,
+      birthDate: formData.birthDate,
+      address: formData.address,
+      documentNumber: formData.documentNumber,
+    })
     setIsEditing(false)
   }
 
-  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (
+    e: ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     const { name, value } = e.target
     setFormData((prev) => ({
       ...prev,
@@ -75,7 +109,6 @@ export default function ProfilePage() {
 
   return (
     <div className="flex min-h-screen bg-[#f7f7f8]">
-
       <div className="w-full px-8 py-8 md:px-12">
         <header className="mb-8">
           <h1 className="text-4xl font-semibold text-slate-900">Профиль</h1>
@@ -95,13 +128,14 @@ export default function ProfilePage() {
                 />
               ) : (
                 <div className="flex h-44 w-44 items-center justify-center rounded-full bg-gray-100 text-5xl font-medium text-slate-900">
-                  {initials || 'ИП'}
+                  {initials || 'П'}
                 </div>
               )}
 
               <h2 className="mt-6 text-3xl font-semibold text-slate-900">
                 {user.firstName} {user.lastName}
               </h2>
+
               <p className="mt-2 text-2xl text-gray-500">{user.email}</p>
 
               <button
@@ -166,6 +200,19 @@ export default function ProfilePage() {
 
               <div className="md:col-span-2">
                 <label className="mb-3 block text-2xl font-semibold text-slate-900">
+                  Отчество
+                </label>
+                <input
+                  name="middleName"
+                  value={formData.middleName}
+                  onChange={handleChange}
+                  disabled={!isEditing}
+                  className="w-full rounded-2xl border border-gray-200 px-5 py-4 text-2xl outline-none disabled:bg-gray-50"
+                />
+              </div>
+
+              <div className="md:col-span-2">
+                <label className="mb-3 block text-2xl font-semibold text-slate-900">
                   Email
                 </label>
                 <input
@@ -190,16 +237,33 @@ export default function ProfilePage() {
                 />
               </div>
 
-              <div className="md:col-span-2">
+              <div>
+                <label className="mb-3 block text-2xl font-semibold text-slate-900">
+                  Пол
+                </label>
+                <select
+                  name="gender"
+                  value={formData.gender}
+                  onChange={handleChange}
+                  disabled={!isEditing}
+                  className="w-full rounded-2xl border border-gray-200 px-5 py-4 text-2xl outline-none disabled:bg-gray-50"
+                >
+                  <option value="">Выберите пол</option>
+                  <option value="Мужской">Мужской</option>
+                  <option value="Женский">Женский</option>
+                </select>
+              </div>
+
+              <div>
                 <label className="mb-3 block text-2xl font-semibold text-slate-900">
                   Дата рождения
                 </label>
                 <input
+                  type="date"
                   name="birthDate"
                   value={formData.birthDate}
                   onChange={handleChange}
                   disabled={!isEditing}
-                  placeholder="дд.мм.гггг"
                   className="w-full rounded-2xl border border-gray-200 px-5 py-4 text-2xl outline-none disabled:bg-gray-50"
                 />
               </div>
@@ -219,11 +283,11 @@ export default function ProfilePage() {
 
               <div className="md:col-span-2">
                 <label className="mb-3 block text-2xl font-semibold text-slate-900">
-                  Страховой полис
+                  Номер документа
                 </label>
                 <input
-                  name="insurancePolicy"
-                  value={formData.insurancePolicy}
+                  name="documentNumber"
+                  value={formData.documentNumber}
                   onChange={handleChange}
                   disabled={!isEditing}
                   className="w-full rounded-2xl border border-gray-200 px-5 py-4 text-2xl outline-none disabled:bg-gray-50"
