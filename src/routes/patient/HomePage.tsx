@@ -1,11 +1,11 @@
 import React from 'react'
-import Recomendation from '../components/Recomendation'
-import UpcomingAppointments from '../components/UpcomingAppointments'
-import calendar from '../assets/card-svg/calendar.svg'
-import clock from '../assets/card-svg/clock.svg'
-import person from '../assets/card-svg/person.svg'
-import paper from '../assets/card-svg/paper.svg'
-import { useUser } from '../context/UserContext'
+import Recomendation from '../../components/patient/Recomendation'
+import UpcomingAppointments from '../../components/patient/UpcomingAppointments'
+import calendar from '../../assets/card-svg/calendar.svg'
+import clock from '../../assets/card-svg/clock.svg'
+import person from '../../assets/card-svg/person.svg'
+import paper from '../../assets/card-svg/paper.svg'
+import { useUser } from '../../context/UserContext'
 
 
 

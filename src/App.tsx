@@ -1,14 +1,14 @@
 import './App.css'
 import Layout from './components/Layout'
-import AppointmentsPage from './routes/AppointmentsPage'
-import DoctorsPage from './routes/DoctorsPage'
-import HomePage from './routes/HomePage'
+import AppointmentsPage from './routes/patient/AppointmentsPage'
+import DoctorsPage from './routes/patient/DoctorsPage'
+import HomePage from './routes/patient/HomePage'
 import { Routes, Route } from 'react-router-dom'
-import MedicalBookPage from './routes/MedicalBookPage'
-import ProfilePage from './routes/ProfilePage'
-import DoctorDetailsPage from './routes/DoctorDetailsPage'
-import LoginPage from './routes/LoginPage'
-import RegisterPage from './routes/RegisterPage'
+import MedicalBookPage from './routes/patient/MedicalBookPage'
+import ProfilePage from './routes/patient/ProfilePage'
+import DoctorDetailsPage from './routes/patient/DoctorDetailsPage'
+import LoginPage from './routes/auth/LoginPage'
+import RegisterPage from './routes/auth/RegisterPage'
 
 function App() {
   return (
@@ -16,13 +16,26 @@ function App() {
       <Route path="/" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
 
-      <Route path="/app" element={<Layout />}>
-        <Route index element={<HomePage />} />
-        <Route path="doctors" element={<DoctorsPage />} />
-        <Route path="doctors/:id" element={<DoctorDetailsPage />} />
-        <Route path="appointments" element={<AppointmentsPage />} />
-        <Route path="medical-book" element={<MedicalBookPage />} />
-        <Route path="profile" element={<ProfilePage />} />
+      <Route element={<Layout />}>
+        {/* patient */}
+        <Route path="/app" element={<HomePage />} />
+        <Route path="/app/doctors" element={<DoctorsPage />} />
+        <Route path="/app/doctors/:id" element={<DoctorDetailsPage />} />
+        <Route path="/app/appointments" element={<AppointmentsPage />} />
+        <Route path="/app/medical-book" element={<MedicalBookPage />} />
+        <Route path="/app/profile" element={<ProfilePage />} />
+
+        {/* doctor
+        <Route path="/doctor" element={<DoctorHomePage />} />
+        <Route path="/doctor/schedule" element={<DoctorSchedulePage />} />
+        <Route path="/doctor/appointments" element={<DoctorAppointmentsPage />} />
+        <Route path="/doctor/profile" element={<DoctorProfilePage />} />
+
+         admin 
+        <Route path="/admin" element={<AdminHomePage />} />
+        <Route path="/admin/doctors" element={<AdminDoctorsPage />} />
+        <Route path="/admin/appointments" element={<AdminAppointmentsPage />} />
+        <Route path="/admin/profile" element={<AdminProfilePage />} /> */}
       </Route>
     </Routes>
   )

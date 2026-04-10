@@ -1,9 +1,9 @@
 import { useState } from 'react'
-import UpcomingAppointments from '../components/UpcomingAppointments'
-import CompletedAppointments from '../components/CompletedAppointments'
-import CancelledAppointments from '../components/CancelledAppointments'
-import CancelAppointmentModal from '../components/CancelAppontmentModal'
-import { useAppointments, type Appointment } from '../context/AppointmentsContext'
+import UpcomingAppointments from '../../components/patient/UpcomingAppointments'
+import CompletedAppointments from '../../components/patient/CompletedAppointments'
+import CancelledAppointments from '../../components/patient/CancelledAppointments'
+import CancelAppointmentModal from '../../components/patient/CancelAppontmentModal'
+import { useAppointments, type Appointment } from '../../context/AppointmentsContext'
 
 export default function AppointmentsPage() {
   const {

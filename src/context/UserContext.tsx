@@ -1,5 +1,7 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
 
+export type UserRole = 'patient' | 'doctor' | 'admin'
+
 export type Appointment = {
   id: string
   doctorName: string
@@ -9,6 +11,7 @@ export type Appointment = {
   status: 'Подтверждена' | 'Отменена' | 'Создана'
   reason: string
 }
+
 
 export type UserProfile = {
   firstName: string
@@ -21,6 +24,7 @@ export type UserProfile = {
   address: string
   documentNumber: string
   avatar: string | null
+  role: UserRole
   appointments: Appointment[]
 }
 
@@ -42,6 +46,7 @@ export const defaultUser: UserProfile = {
   birthDate: '',
   address: '',
   documentNumber: '',
+  role: 'patient',
   avatar: null,
   appointments: [],
 }
@@ -52,11 +57,16 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const [user, setUserState] = useState<UserProfile>(defaultUser)
 
   useEffect(() => {
-    const savedUser = localStorage.getItem('user-profile')
-    if (savedUser) {
-      setUserState(JSON.parse(savedUser))
-    }
-  }, [])
+  const savedUser = localStorage.getItem('user-profile')
+  if (savedUser) {
+    const parsedUser = JSON.parse(savedUser)
+    setUserState({
+      ...defaultUser,
+      ...parsedUser,
+      role: parsedUser.role ?? 'patient',
+    })
+  }
+}, [])
 
   const saveUser = (data: UserProfile) => {
     setUserState(data)

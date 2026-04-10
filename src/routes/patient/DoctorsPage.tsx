@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Search, ChevronDown } from 'lucide-react'
-import DoctorCard from '../components/DoctorCard'
-import { doctorsData } from '../data/doctors'
+import DoctorCard from '../../components/patient/DoctorCard'
+import { doctorsData } from '../../data/doctors'
 
 const specialties = [
   'Все специальности',

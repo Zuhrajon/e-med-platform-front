@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import MedicalVisitCard, { type MedicalVisit } from '../components/MedicalVisitCard'
-import ProtocolModal from '../components/ProtocolModal'
+import MedicalVisitCard, { type MedicalVisit } from '../../components/patient/MedicalVisitCard'
+import ProtocolModal from '../../components/patient/ProtocolModal'
 
 export default function MedicalBookPage() {
   const [selectedVisit, setSelectedVisit] = useState<MedicalVisit | null>(null)

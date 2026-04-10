@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ChangeEvent } from 'react'
-import { useUser } from '../context/UserContext'
+import { useUser } from '../../context/UserContext'
 
 export default function ProfilePage() {
   const { user, updateUser } = useUser()

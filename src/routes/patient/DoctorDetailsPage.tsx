@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { doctorsData } from '../data/doctors'
-import { useAppointments } from '../context/AppointmentsContext'
+import { doctorsData } from '../../data/doctors'
+import { useAppointments } from '../../context/AppointmentsContext'
 
 const availableDates = ['10 апреля', '11 апреля', '14 апреля', '15 апреля', '16 апреля']
 const availableTimes = [

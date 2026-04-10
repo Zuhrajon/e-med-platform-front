@@ -1,19 +1,19 @@
-import logo from '../assets/react.svg'
-import house from '../assets/card-svg/house.svg'
-import exit from '../assets/card-svg/exit.svg'
-import { useUser } from '../context/UserContext'
+import logo from '../../assets/react.svg'
+import house from '../../assets/card-svg/house.svg'
+import exit from '../../assets/card-svg/exit.svg'
+import { useUser } from '../../context/UserContext'
 import { NavLink, useNavigate } from 'react-router-dom'
 
 
 
 function Navigation() {
-  
+
   const navigate = useNavigate()
   const { user } = useUser()
 
   function handleLogout() {
-  navigate('/')
-}
+    navigate('/')
+  }
 
   const linkBase =
     'flex items-center gap-2 rounded-2xl px-6 py-2 text-left transition'

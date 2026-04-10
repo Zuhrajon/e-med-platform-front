@@ -1,6 +1,6 @@
 import { FormEvent, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { useUser } from '../context/UserContext'
+import { useUser } from '../../context/UserContext'
 
 type RegisterForm = {
     firstName: string
@@ -110,6 +110,7 @@ export default function RegisterPage() {
                 address: form.address,
                 documentNumber: form.documentNumber,
                 avatar: null,
+                role: 'patient',
                 appointments: [],
             })
 
