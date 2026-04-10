@@ -83,6 +83,7 @@ export default function LoginPage() {
                 address: '',
                 documentNumber: '',
                 avatar: null,
+                role: 'doctor',
                 appointments: [],
             })
 

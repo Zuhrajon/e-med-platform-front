@@ -46,10 +46,12 @@ export const defaultUser: UserProfile = {
   birthDate: '',
   address: '',
   documentNumber: '',
-  role: 'patient',
+  role: 'doctor',
   avatar: null,
   appointments: [],
 }
+
+
 
 const UserContext = createContext<UserContextType | undefined>(undefined)
 

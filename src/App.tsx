@@ -9,6 +9,7 @@ import ProfilePage from './routes/patient/ProfilePage'
 import DoctorDetailsPage from './routes/patient/DoctorDetailsPage'
 import LoginPage from './routes/auth/LoginPage'
 import RegisterPage from './routes/auth/RegisterPage'
+import DoctorHomePage from './components/doctor/DoctorHomePage'
 
 function App() {
   return (
@@ -25,9 +26,9 @@ function App() {
         <Route path="/app/medical-book" element={<MedicalBookPage />} />
         <Route path="/app/profile" element={<ProfilePage />} />
 
-        {/* doctor
+        
         <Route path="/doctor" element={<DoctorHomePage />} />
-        <Route path="/doctor/schedule" element={<DoctorSchedulePage />} />
+        {/* doctor <Route path="/doctor/schedule" element={<DoctorSchedulePage />} />
         <Route path="/doctor/appointments" element={<DoctorAppointmentsPage />} />
         <Route path="/doctor/profile" element={<DoctorProfilePage />} />
 
