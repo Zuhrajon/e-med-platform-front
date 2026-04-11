@@ -58,7 +58,7 @@ function Navigation() {
 
 
             <NavLink
-              to="/doctor"
+              to="/doctor/schedule"
               className={({ isActive }) =>
                 `${linkBase} ${isActive
                   ? 'bg-sky-700 text-white'
@@ -75,7 +75,7 @@ function Navigation() {
             </NavLink>
 
             <NavLink
-              to="/doctor"
+              to="/doctor/appointments"
               className={({ isActive }) =>
                 `${linkBase} ${isActive
                   ? 'bg-sky-700 text-white'

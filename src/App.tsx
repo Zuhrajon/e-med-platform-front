@@ -9,7 +9,9 @@ import ProfilePage from './routes/patient/ProfilePage'
 import DoctorDetailsPage from './routes/patient/DoctorDetailsPage'
 import LoginPage from './routes/auth/LoginPage'
 import RegisterPage from './routes/auth/RegisterPage'
-import DoctorHomePage from './components/doctor/DoctorHomePage'
+import DoctorHomePage from './routes/doctor/DoctorHomePage'
+import DoctorAppointmentsPage from './routes/doctor/DoctorAppointmentsPage'
+import DoctorSchedulePage from './routes/doctor/DoctorSchedulePage'
 
 function App() {
   return (
@@ -25,10 +27,16 @@ function App() {
         <Route path="/app/appointments" element={<AppointmentsPage />} />
         <Route path="/app/medical-book" element={<MedicalBookPage />} />
         <Route path="/app/profile" element={<ProfilePage />} />
+      </Route>
 
-        
-        <Route path="/doctor" element={<DoctorHomePage />} />
-        {/* doctor <Route path="/doctor/schedule" element={<DoctorSchedulePage />} />
+      <Route path="/doctor" element={<Layout />}>
+        <Route index element={<DoctorHomePage />} />
+        <Route path="appointments" element={<DoctorAppointmentsPage />} />
+        {/* <Route path="protocols/:id" element={<DoctorProtocolPage />} /> */}
+        <Route path="schedule" element={<DoctorSchedulePage />} />
+      </Route>
+
+      {/* doctor <Route path="/doctor/schedule" element={<DoctorSchedulePage />} />
         <Route path="/doctor/appointments" element={<DoctorAppointmentsPage />} />
         <Route path="/doctor/profile" element={<DoctorProfilePage />} />
 
@@ -37,7 +45,7 @@ function App() {
         <Route path="/admin/doctors" element={<AdminDoctorsPage />} />
         <Route path="/admin/appointments" element={<AdminAppointmentsPage />} />
         <Route path="/admin/profile" element={<AdminProfilePage />} /> */}
-      </Route>
+
     </Routes>
   )
 }
