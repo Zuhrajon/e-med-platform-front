@@ -96,7 +96,7 @@ function Navigation() {
             </NavLink>
 
             <NavLink
-              to="/doctor"
+              to="/doctor/profile"
               className={({ isActive }) =>
                 `${linkBase} ${isActive
                   ? 'bg-sky-700 text-white'

@@ -6,6 +6,25 @@ export type AppointmentStatus =
   | 'Завершена'
   | 'Отменена'
 
+export type AppointmentProtocol = {
+  complaint: string
+  diagnosis: string
+  treatment: string
+  recommendations: string
+  createdAt: string
+}
+
+export type AppointmentPrescription = {
+  text: string
+  createdAt: string
+}
+
+export type AppointmentFile = {
+  id: string
+  name: string
+  url?: string
+}
+
 export type Appointment = {
   id: string
   doctorId?: string
@@ -15,6 +34,14 @@ export type Appointment = {
   time: string
   status: AppointmentStatus
   reason: string
+
+  patientId?: string
+  patientName?: string
+  patientCode?: string
+
+  protocol?: AppointmentProtocol | null
+  prescription?: AppointmentPrescription | null
+  files?: AppointmentFile[]
 }
 
 type AppointmentsContextType = {
@@ -23,6 +50,25 @@ type AppointmentsContextType = {
   cancelledAppointments: Appointment[]
   addAppointment: (appointment: Appointment) => void
   cancelAppointment: (id: string) => void
+
+  saveProtocol: (
+    id: string,
+    payload: Omit<AppointmentProtocol, 'createdAt'>,
+  ) => void
+
+  savePrescription: (
+    id: string,
+    payload: Omit<AppointmentPrescription, 'createdAt'>,
+  ) => void
+
+  uploadFiles: (id: string, files: AppointmentFile[]) => void
+
+  getDoctorAppointmentsByDate: (date: string) => Appointment[]
+  getDoctorDayStats: (date: string) => {
+    total: number
+    completed: number
+    waiting: number
+  }
 }
 
 const AppointmentsContext = createContext<AppointmentsContextType | undefined>(undefined)
@@ -33,36 +79,52 @@ const defaultUpcomingAppointments: Appointment[] = [
     doctorId: '1',
     doctorName: 'Анна Иванова',
     specialty: 'Терапевт',
-    date: '10 апреля',
+    date: '13 апреля',
     time: '10:00',
     status: 'Подтверждена',
     reason: 'Профилактический осмотр',
+    patientId: 'p1',
+    patientName: 'Иванова Мария Петровна',
+    patientCode: 'P001',
+    protocol: null,
+    prescription: null,
+    files: [],
   },
   {
     id: '2',
-    doctorId: '2',
-    doctorName: 'Дмитрий Петров',
-    specialty: 'Кардиолог',
-    date: '15 апреля',
-    time: '14:30',
-    status: 'Создана',
-    reason: 'Консультация кардиолога',
+    doctorId: '1',
+    doctorName: 'Анна Иванова',
+    specialty: 'Терапевт',
+    date: '13 апреля',
+    time: '11:30',
+    status: 'Подтверждена',
+    reason: 'Консультация',
+    patientId: 'p2',
+    patientName: 'Петров Алексей Сергеевич',
+    patientCode: 'P002',
+    protocol: null,
+    prescription: null,
+    files: [],
   },
-]
-
-const defaultCompletedAppointments: Appointment[] = [
   {
     id: '3',
-    doctorId: '3',
-    doctorName: 'Елена Сидорова',
-    specialty: 'Невролог',
-    date: '28 марта',
-    time: '11:00',
-    status: 'Завершена',
-    reason: 'Головные боли',
+    doctorId: '1',
+    doctorName: 'Анна Иванова',
+    specialty: 'Терапевт',
+    date: '13 апреля',
+    time: '14:00',
+    status: 'Создана',
+    reason: 'Повторный приём',
+    patientId: 'p3',
+    patientName: 'Сидорова Елена Викторовна',
+    patientCode: 'P003',
+    protocol: null,
+    prescription: null,
+    files: [],
   },
 ]
 
+const defaultCompletedAppointments: Appointment[] = []
 const defaultCancelledAppointments: Appointment[] = []
 
 type AppointmentsStorage = {
@@ -75,7 +137,8 @@ const STORAGE_KEY = 'appointments-data'
 
 export function AppointmentsProvider({ children }: { children: ReactNode }) {
   const [upcomingAppointments, setUpcomingAppointments] = useState<Appointment[]>([])
-  const [completedAppointments] = useState<Appointment[]>(defaultCompletedAppointments)
+  const [completedAppointments, setCompletedAppointments] =
+    useState<Appointment[]>(defaultCompletedAppointments)
   const [cancelledAppointments, setCancelledAppointments] = useState<Appointment[]>([])
 
   useEffect(() => {
@@ -84,9 +147,11 @@ export function AppointmentsProvider({ children }: { children: ReactNode }) {
     if (saved) {
       const parsed: AppointmentsStorage = JSON.parse(saved)
       setUpcomingAppointments(parsed.upcomingAppointments || [])
+      setCompletedAppointments(parsed.completedAppointments || [])
       setCancelledAppointments(parsed.cancelledAppointments || [])
     } else {
       setUpcomingAppointments(defaultUpcomingAppointments)
+      setCompletedAppointments(defaultCompletedAppointments)
       setCancelledAppointments(defaultCancelledAppointments)
 
       localStorage.setItem(
@@ -103,7 +168,7 @@ export function AppointmentsProvider({ children }: { children: ReactNode }) {
   const saveAll = (
     nextUpcoming: Appointment[],
     nextCancelled: Appointment[],
-    nextCompleted: Appointment[] = completedAppointments,
+    nextCompleted: Appointment[],
   ) => {
     localStorage.setItem(
       STORAGE_KEY,
@@ -118,7 +183,7 @@ export function AppointmentsProvider({ children }: { children: ReactNode }) {
   const addAppointment = (appointment: Appointment) => {
     const nextUpcoming = [appointment, ...upcomingAppointments]
     setUpcomingAppointments(nextUpcoming)
-    saveAll(nextUpcoming, cancelledAppointments)
+    saveAll(nextUpcoming, cancelledAppointments, completedAppointments)
   }
 
   const cancelAppointment = (id: string) => {
@@ -136,7 +201,77 @@ export function AppointmentsProvider({ children }: { children: ReactNode }) {
 
     setUpcomingAppointments(nextUpcoming)
     setCancelledAppointments(nextCancelled)
-    saveAll(nextUpcoming, nextCancelled)
+    saveAll(nextUpcoming, nextCancelled, completedAppointments)
+  }
+
+  const saveProtocol = (
+    id: string,
+    payload: Omit<AppointmentProtocol, 'createdAt'>,
+  ) => {
+    const nextUpcoming = upcomingAppointments.map((item) =>
+      item.id === id
+        ? {
+            ...item,
+            protocol: {
+              ...payload,
+              createdAt: new Date().toISOString(),
+            },
+          }
+        : item,
+    )
+
+    setUpcomingAppointments(nextUpcoming)
+    saveAll(nextUpcoming, cancelledAppointments, completedAppointments)
+  }
+
+  const savePrescription = (
+    id: string,
+    payload: Omit<AppointmentPrescription, 'createdAt'>,
+  ) => {
+    const nextUpcoming = upcomingAppointments.map((item) =>
+      item.id === id
+        ? {
+            ...item,
+            prescription: {
+              ...payload,
+              createdAt: new Date().toISOString(),
+            },
+          }
+        : item,
+    )
+
+    setUpcomingAppointments(nextUpcoming)
+    saveAll(nextUpcoming, cancelledAppointments, completedAppointments)
+  }
+
+  const uploadFiles = (id: string, files: AppointmentFile[]) => {
+    const nextUpcoming = upcomingAppointments.map((item) =>
+      item.id === id
+        ? {
+            ...item,
+            files: [...(item.files || []), ...files],
+          }
+        : item,
+    )
+
+    setUpcomingAppointments(nextUpcoming)
+    saveAll(nextUpcoming, cancelledAppointments, completedAppointments)
+  }
+
+  const getDoctorAppointmentsByDate = (date: string) => {
+    return upcomingAppointments
+      .filter((item) => item.date === date)
+      .sort((a, b) => a.time.localeCompare(b.time))
+  }
+
+  const getDoctorDayStats = (date: string) => {
+    const items = upcomingAppointments.filter((item) => item.date === date)
+
+    return {
+      total: items.length,
+      completed: items.filter((item) => !!item.protocol).length,
+      waiting: items.filter((item) => !item.protocol).length,
+    }
   }
 
   return (
@@ -147,6 +282,11 @@ export function AppointmentsProvider({ children }: { children: ReactNode }) {
         cancelledAppointments,
         addAppointment,
         cancelAppointment,
+        saveProtocol,
+        savePrescription,
+        uploadFiles,
+        getDoctorAppointmentsByDate,
+        getDoctorDayStats,
       }}
     >
       {children}

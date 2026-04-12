@@ -12,6 +12,7 @@ import RegisterPage from './routes/auth/RegisterPage'
 import DoctorHomePage from './routes/doctor/DoctorHomePage'
 import DoctorAppointmentsPage from './routes/doctor/DoctorAppointmentsPage'
 import DoctorSchedulePage from './routes/doctor/DoctorSchedulePage'
+import DoctorProfilePage from './routes/doctor/DoctorProfilePage'
 
 function App() {
   return (
@@ -32,8 +33,8 @@ function App() {
       <Route path="/doctor" element={<Layout />}>
         <Route index element={<DoctorHomePage />} />
         <Route path="appointments" element={<DoctorAppointmentsPage />} />
-        {/* <Route path="protocols/:id" element={<DoctorProtocolPage />} /> */}
         <Route path="schedule" element={<DoctorSchedulePage />} />
+        <Route path="/doctor/profile" element={<DoctorProfilePage />} />
       </Route>
 
       {/* doctor <Route path="/doctor/schedule" element={<DoctorSchedulePage />} />

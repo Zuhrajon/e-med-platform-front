@@ -1,6 +1,6 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
+// 
 
-export type UserRole = 'patient' | 'doctor' | 'admin'
+import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
 
 export type Appointment = {
   id: string
@@ -12,8 +12,9 @@ export type Appointment = {
   reason: string
 }
 
-
 export type UserProfile = {
+  role: 'patient' | 'doctor' | 'admin'
+
   firstName: string
   lastName: string
   middleName: string
@@ -24,7 +25,18 @@ export type UserProfile = {
   address: string
   documentNumber: string
   avatar: string | null
-  role: UserRole
+
+  // doctor fields
+  position: string
+  officeNumber: string
+  department: string
+  specialization: string
+  qualification: string
+  description: string
+
+  // security
+  password: string
+
   appointments: Appointment[]
 }
 
@@ -32,26 +44,35 @@ type UserContextType = {
   user: UserProfile
   updateUser: (data: Partial<UserProfile>) => void
   setUser: (data: UserProfile) => void
-  addAppointment: (appointment: Appointment) => void
-  cancelAppointment: (id: string) => void
 }
 
-export const defaultUser: UserProfile = {
-  firstName: '',
-  lastName: '',
-  middleName: '',
-  email: '',
-  phone: '',
-  gender: '',
-  birthDate: '',
-  address: '',
-  documentNumber: '',
+const defaultUser: UserProfile = {
   role: 'doctor',
+
+  firstName: 'Анна',
+  lastName: 'Иванова',
+  middleName: 'Сергеевна',
+  email: 'doctor@example.com',
+  phone: '+7 (999) 123-45-67',
+  gender: 'Женский',
+  birthDate: '1990-04-12',
+  address: 'г. Душанбе',
+  documentNumber: 'A1234567',
   avatar: null,
+
+  position: 'Врач-терапевт',
+  officeNumber: 'Кабинет 204',
+  department: 'Терапевтическое отделение',
+  specialization: 'Терапия',
+  qualification: 'Высшая категория',
+  description: 'Врач с опытом работы более 10 лет. Специализируется на профилактике и лечении заболеваний внутренних органов.',
+
+  password: '12345678',
+
   appointments: [],
 }
 
-
+const STORAGE_KEY = 'user-profile'
 
 const UserContext = createContext<UserContextType | undefined>(undefined)
 
@@ -59,59 +80,30 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const [user, setUserState] = useState<UserProfile>(defaultUser)
 
   useEffect(() => {
-  const savedUser = localStorage.getItem('user-profile')
-  if (savedUser) {
-    const parsedUser = JSON.parse(savedUser)
-    setUserState({
-      ...defaultUser,
-      ...parsedUser,
-      role: parsedUser.role ?? 'patient',
-    })
-  }
-}, [])
+    const saved = localStorage.getItem(STORAGE_KEY)
+    if (saved) {
+      setUserState(JSON.parse(saved))
+    } else {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(defaultUser))
+    }
+  }, [])
 
-  const saveUser = (data: UserProfile) => {
-    setUserState(data)
-    localStorage.setItem('user-profile', JSON.stringify(data))
-  }
-
-  const setUser = (data: UserProfile) => {
-    saveUser(data)
+  const persistUser = (nextUser: UserProfile) => {
+    setUserState(nextUser)
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(nextUser))
   }
 
   const updateUser = (data: Partial<UserProfile>) => {
-    const updated = { ...user, ...data }
-    saveUser(updated)
+    const nextUser = { ...user, ...data }
+    persistUser(nextUser)
   }
 
-  const addAppointment = (appointment: Appointment) => {
-    const updated = {
-      ...user,
-      appointments: [appointment, ...user.appointments],
-    }
-    saveUser(updated)
-  }
-
-  const cancelAppointment = (id: string) => {
-    const updated = {
-      ...user,
-      appointments: user.appointments.map((item) =>
-        item.id === id ? { ...item, status: 'Отменена' } : item
-      ),
-    }
-    saveUser(updated)
+  const setUser = (data: UserProfile) => {
+    persistUser(data)
   }
 
   return (
-    <UserContext.Provider
-      value={{
-        user,
-        updateUser,
-        setUser,
-        addAppointment,
-        cancelAppointment,
-      }}
-    >
+    <UserContext.Provider value={{ user, updateUser, setUser }}>
       {children}
     </UserContext.Provider>
   )
@@ -119,8 +111,10 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
 export function useUser() {
   const context = useContext(UserContext)
+
   if (!context) {
     throw new Error('useUser must be used inside UserProvider')
   }
+
   return context
 }
