@@ -47,7 +47,7 @@ type UserContextType = {
 }
 
 const defaultUser: UserProfile = {
-  role: 'doctor',
+  role: 'admin',
 
   firstName: 'Анна',
   lastName: 'Иванова',
