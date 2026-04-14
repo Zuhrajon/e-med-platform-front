@@ -206,87 +206,87 @@ export function UserProvider({ children }: { children: ReactNode }) {
     })
   }, [])
 
-  // const applyAuthResult = useCallback(
-  //   (
-  //     auth: {
-  //       access_token: string
-  //       refresh_token: string
-  //       token_type: string
-  //       expires_in: number
-  //       must_change_password: boolean
-  //       role: 'patient' | 'doctor' | 'superuser' | 'receptionist'
-  //     },
-  //     baseProfile: Partial<UserProfile>,
-  //   ) => {
-  //     const role = mapBackendRoleToAppRole(auth.role)
-
-
-  //     const nextSession: Session = {
-  //       accessToken: auth.access_token,
-  //       refreshToken: auth.refresh_token,
-  //       tokenType: auth.token_type,
-  //       expiresIn: auth.expires_in,
-  //       mustChangePassword: auth.must_change_password,
-  //     }
-
-  //     const nextUser: UserProfile = {
-  //       ...emptyUser,
-  //       ...user,
-  //       ...baseProfile,
-  //       role,
-  //     }
-
-  //     setSession(nextSession)
-  //     persistSession(nextSession)
-  //     setUser(nextUser)
-
-  //     return role
-  //   },
-  //   [setUser, user],
-  // )
   const applyAuthResult = useCallback(
-  (
-    auth: {
-      access_token: string
-      refresh_token: string
-      token_type: string
-      expires_in: number
-      must_change_password: boolean
-      role: 'patient' | 'doctor' | 'superuser' | 'receptionist'
+    (
+      auth: {
+        access_token: string
+        refresh_token: string
+        token_type: string
+        expires_in: number
+        must_change_password: boolean
+        role: 'patient' | 'doctor' | 'superuser' | 'receptionist'
+      },
+      baseProfile: Partial<UserProfile>,
+    ) => {
+      const role = mapBackendRoleToAppRole(auth.role)
+
+
+      const nextSession: Session = {
+        accessToken: auth.access_token,
+        refreshToken: auth.refresh_token,
+        tokenType: auth.token_type,
+        expiresIn: auth.expires_in,
+        mustChangePassword: auth.must_change_password,
+      }
+
+      const nextUser: UserProfile = {
+        ...emptyUser,
+        ...user,
+        ...baseProfile,
+        role,
+      }
+
+      setSession(nextSession)
+      persistSession(nextSession)
+      setUser(nextUser)
+
+      return role
     },
-    baseProfile: Partial<UserProfile>,
-  ) => {
-    let role = mapBackendRoleToAppRole(auth.role)
+    [setUser, user],
+  )
+//   const applyAuthResult = useCallback(
+//   (
+//     auth: {
+//       access_token: string
+//       refresh_token: string
+//       token_type: string
+//       expires_in: number
+//       must_change_password: boolean
+//       role: 'patient' | 'doctor' | 'superuser' | 'receptionist'
+//     },
+//     baseProfile: Partial<UserProfile>,
+//   ) => {
+//     let role = mapBackendRoleToAppRole(auth.role)
 
-    // временно для демонстрации:
-    // этот пациент будет открываться как доктор
-    if (baseProfile.email?.toLowerCase() === 'zuz23@gmail.com') {
-      role = 'doctor'
-    }
+//     // временно для демонстрации:
+//     // этот пациент будет открываться как доктор
+//     if (baseProfile.email?.toLowerCase() === 'zuz23@gmail.com') {
+//       role = 'doctor'
+//     }
 
-    const nextSession: Session = {
-      accessToken: auth.access_token,
-      refreshToken: auth.refresh_token,
-      tokenType: auth.token_type,
-      expiresIn: auth.expires_in,
-      mustChangePassword: auth.must_change_password,
-    }
+//     const nextSession: Session = {
+//       accessToken: auth.access_token,
+//       refreshToken: auth.refresh_token,
+//       tokenType: auth.token_type,
+//       expiresIn: auth.expires_in,
+//       mustChangePassword: auth.must_change_password,
+//     }
 
-    const nextUser: UserProfile = {
-      ...emptyUser,
-      ...user,
-      ...baseProfile,
-      role,
-    }
+//     const nextUser: UserProfile = {
+//       ...emptyUser,
+//       ...user,
+//       ...baseProfile,
+//       role,
+//     }
 
-    setSession(nextSession)
-    persistSession(nextSession)
-    setUser(nextUser)
+//     setSession(nextSession)
+//     persistSession(nextSession)
+//     setUser(nextUser)
 
-    return role
-  },
-  [setUser, user],
-)
+//     return role
+//   },
+//   [setUser, user],
+// )
 
   const login = useCallback(
     async ({ email, password }: LoginInput) => {

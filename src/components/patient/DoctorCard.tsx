@@ -1,8 +1,8 @@
 import { useNavigate } from 'react-router-dom'
-import type { Doctor } from '../../data/doctors'
+import type { DoctorListItem } from '../../lib/doctors'
 
 type DoctorCardProps = {
-  doctor: Doctor
+  doctor: DoctorListItem
 }
 
 export default function DoctorCard({ doctor }: DoctorCardProps) {
