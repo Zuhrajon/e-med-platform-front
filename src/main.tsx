@@ -9,14 +9,14 @@ import { DoctorScheduleProvider } from './context/DoctorScheduleContext.tsx'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <BrowserRouter>
     <UserProvider>
       <AppointmentsProvider>
         <DoctorScheduleProvider>
-          <App />
+          <BrowserRouter>
+            <App />
+          </BrowserRouter>
         </DoctorScheduleProvider>
       </AppointmentsProvider>
     </UserProvider>
-    </BrowserRouter>
   </StrictMode>,
 )

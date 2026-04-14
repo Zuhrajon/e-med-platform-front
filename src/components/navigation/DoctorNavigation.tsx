@@ -9,9 +9,10 @@ import { NavLink, useNavigate } from 'react-router-dom'
 function Navigation() {
 
   const navigate = useNavigate()
-  const { user } = useUser()
+  const { user, logout } = useUser()
 
-  function handleLogout() {
+  async function handleLogout() {
+    await logout()
     navigate('/')
   }
 
