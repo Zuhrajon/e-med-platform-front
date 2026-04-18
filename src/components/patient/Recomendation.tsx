@@ -1,5 +1,3 @@
-import React from 'react'
-
 export default function Recomendation() {
     const recommendations = [
         "Не забудьте пройти ежегодную диспансеризацию",

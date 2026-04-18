@@ -1,5 +1,5 @@
 import { Calendar, Clock } from 'lucide-react'
-import type { Appointment } from '../../routes/patient/AppointmentsPage'
+import type { Appointment } from '../../context/AppointmentsContext'
 
 type UpcomingAppointmentsProps = {
   appointments: Appointment[]

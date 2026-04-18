@@ -20,6 +20,10 @@ import DoctorSchedulePage from './routes/doctor/DoctorSchedulePage'
 import DoctorProfilePage from './routes/doctor/DoctorProfilePage'
 
 import AdminHomePage from './routes/admin/AdminHomePage'
+import AdminAppointmentsPage from './routes/admin/AdminAppointmentsPage'
+import AdminFakeDataPage from './routes/admin/AdminFakeDataPage'
+import AdminSettingsPage from './routes/admin/AdminSettingsPage'
+import AdminUsersPage from './routes/admin/AdminUsersPage'
 
 function RequireAuth({ roles }: { roles: Array<'patient' | 'doctor' | 'admin'> }) {
   const { isAuthenticated, isBootstrapping, user } = useUser()
@@ -88,6 +92,10 @@ export default function App() {
       <Route element={<RequireAuth roles={['admin']} />}>
         <Route path="/admin" element={<Layout />}>
           <Route index element={<AdminHomePage />} />
+          <Route path="appointments" element={<AdminAppointmentsPage />} />
+          <Route path="fake-data" element={<AdminFakeDataPage />} />
+          <Route path="users" element={<AdminUsersPage />} />
+          <Route path="settings" element={<AdminSettingsPage />} />
         </Route>
       </Route>
 

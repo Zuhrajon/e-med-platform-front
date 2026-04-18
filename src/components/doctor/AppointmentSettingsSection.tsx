@@ -18,14 +18,14 @@ export default function AppointmentSettingsSection({
 
   return (
     <section className="rounded-3xl border border-gray-200 bg-white px-9 py-8 shadow-sm">
-      <h2 className="text-[24px] font-semibold text-slate-900">
-        Настройки приёма
+      <h2 className="text-[21px] font-semibold text-slate-900">
+        Настройки приема
       </h2>
 
-      <div className="mt-8 space-y-7">
+      <div className="mt-8 space-y-6">
         <div>
-          <label className="mb-3 block text-[18px] font-semibold text-slate-900">
-            Длительность приёма
+          <label className="mb-3 block text-[16px] font-semibold text-slate-900">
+            Длительность приема
           </label>
           <select
             value={form.appointmentDuration}
@@ -35,7 +35,7 @@ export default function AppointmentSettingsSection({
                 appointmentDuration: Number(e.target.value),
               }))
             }
-            className="h-16 w-full rounded-2xl border border-gray-200 px-6 text-[18px] outline-none transition focus:border-sky-500"
+            className="h-14 w-full rounded-2xl border border-gray-200 px-5 text-[16px] outline-none transition focus:border-sky-500"
           >
             <option value={15}>15 минут</option>
             <option value={30}>30 минут</option>
@@ -45,8 +45,8 @@ export default function AppointmentSettingsSection({
         </div>
 
         <div>
-          <label className="mb-3 block text-[18px] font-semibold text-slate-900">
-            Перерыв между приёмами
+          <label className="mb-3 block text-[16px] font-semibold text-slate-900">
+            Перерыв между приемами
           </label>
           <select
             value={form.breakBetweenAppointments}
@@ -56,7 +56,7 @@ export default function AppointmentSettingsSection({
                 breakBetweenAppointments: Number(e.target.value),
               }))
             }
-            className="h-16 w-full rounded-2xl border border-gray-200 px-6 text-[18px] outline-none transition focus:border-sky-500"
+            className="h-14 w-full rounded-2xl border border-gray-200 px-5 text-[16px] outline-none transition focus:border-sky-500"
           >
             <option value={0}>Без перерыва</option>
             <option value={5}>5 минут</option>
@@ -66,11 +66,13 @@ export default function AppointmentSettingsSection({
         </div>
 
         <div>
-          <label className="mb-3 block text-[18px] font-semibold text-slate-900">
+          <label className="mb-3 block text-[16px] font-semibold text-slate-900">
             Максимум записей в день
           </label>
           <select
-            value={form.maxAppointmentsPerDay === null ? 'null' : form.maxAppointmentsPerDay}
+            value={
+              form.maxAppointmentsPerDay === null ? 'null' : form.maxAppointmentsPerDay
+            }
             onChange={(e) =>
               setForm((prev) => ({
                 ...prev,
@@ -78,7 +80,7 @@ export default function AppointmentSettingsSection({
                   e.target.value === 'null' ? null : Number(e.target.value),
               }))
             }
-            className="h-16 w-full rounded-2xl border border-gray-200 px-6 text-[18px] outline-none transition focus:border-sky-500"
+            className="h-14 w-full rounded-2xl border border-gray-200 px-5 text-[16px] outline-none transition focus:border-sky-500"
           >
             <option value={5}>5 пациентов</option>
             <option value={10}>10 пациентов</option>
@@ -90,7 +92,7 @@ export default function AppointmentSettingsSection({
         <button
           type="button"
           onClick={() => onSave(form)}
-          className="mt-2 h-16 w-full rounded-2xl bg-sky-600 text-[18px] font-semibold text-white transition hover:bg-sky-700"
+          className="mt-2 h-14 w-full rounded-2xl bg-sky-600 text-[16px] font-semibold text-white transition hover:bg-sky-700"
         >
           Сохранить настройки
         </button>

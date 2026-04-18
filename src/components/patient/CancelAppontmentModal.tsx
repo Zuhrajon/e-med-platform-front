@@ -1,5 +1,5 @@
 import { X } from 'lucide-react'
-import type { Appointment } from '../../routes/patient/AppointmentsPage'
+import type { Appointment } from '../../context/AppointmentsContext'
 
 type CancelAppointmentModalProps = {
   appointment: Appointment | null

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
-import Modal from './Modal'
 import type { WeekDay, WorkingDay } from '../../type/schedule'
 import { WEEK_DAYS } from '../../utils/schedule'
+import Modal from './Modal'
 
 type AddWorkingDayModalProps = {
   isOpen: boolean
@@ -34,16 +34,16 @@ export default function AddWorkingDayModal({
 
   return (
     <Modal title="Добавить рабочий день" isOpen={isOpen} onClose={onClose}>
-      <div className="space-y-6">
+      <div className="space-y-5">
         <div>
-          <label className="mb-3 block text-[18px] font-semibold text-slate-900">
+          <label className="mb-3 block text-[16px] font-semibold text-slate-900">
             День недели
           </label>
 
           <select
             value={day}
             onChange={(e) => setDay(e.target.value as WeekDay)}
-            className="h-16 w-full rounded-2xl border border-gray-200 px-6 text-[18px] outline-none transition focus:border-sky-500"
+            className="h-14 w-full rounded-2xl border border-gray-200 px-5 text-[16px] outline-none transition focus:border-sky-500"
           >
             {WEEK_DAYS.map((item) => (
               <option key={item.value} value={item.value}>
@@ -53,28 +53,28 @@ export default function AddWorkingDayModal({
           </select>
         </div>
 
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+        <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
           <div>
-            <label className="mb-3 block text-[18px] font-semibold text-slate-900">
+            <label className="mb-3 block text-[16px] font-semibold text-slate-900">
               Начало
             </label>
             <input
               type="time"
               value={startTime}
               onChange={(e) => setStartTime(e.target.value)}
-              className="h-16 w-full rounded-2xl border border-gray-200 px-6 text-[18px] outline-none transition focus:border-sky-500"
+              className="h-14 w-full rounded-2xl border border-gray-200 px-5 text-[16px] outline-none transition focus:border-sky-500"
             />
           </div>
 
           <div>
-            <label className="mb-3 block text-[18px] font-semibold text-slate-900">
+            <label className="mb-3 block text-[16px] font-semibold text-slate-900">
               Конец
             </label>
             <input
               type="time"
               value={endTime}
               onChange={(e) => setEndTime(e.target.value)}
-              className="h-16 w-full rounded-2xl border border-gray-200 px-6 text-[18px] outline-none transition focus:border-sky-500"
+              className="h-14 w-full rounded-2xl border border-gray-200 px-5 text-[16px] outline-none transition focus:border-sky-500"
             />
           </div>
         </div>
@@ -83,7 +83,7 @@ export default function AddWorkingDayModal({
           <button
             type="button"
             onClick={onClose}
-            className="h-16 rounded-2xl border border-gray-200 text-[18px] font-semibold text-slate-900 transition hover:bg-gray-50"
+            className="h-14 rounded-2xl border border-gray-200 text-[16px] font-semibold text-slate-900 transition hover:bg-gray-50"
           >
             Отмена
           </button>
@@ -91,7 +91,7 @@ export default function AddWorkingDayModal({
           <button
             type="button"
             onClick={handleSave}
-            className="h-16 rounded-2xl bg-sky-600 text-[18px] font-semibold text-white transition hover:bg-sky-700"
+            className="h-14 rounded-2xl bg-sky-600 text-[16px] font-semibold text-white transition hover:bg-sky-700"
           >
             Добавить
           </button>

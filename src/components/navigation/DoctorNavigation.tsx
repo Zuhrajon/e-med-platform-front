@@ -1,13 +1,9 @@
-import logo from '../../assets/react.svg'
-import house from '../../assets/card-svg/house.svg'
-import exit from '../../assets/card-svg/exit.svg'
-import { useUser } from '../../context/UserContext'
+import { CalendarDays, House, LogOut, NotebookPen, UserRound } from 'lucide-react'
 import { NavLink, useNavigate } from 'react-router-dom'
+import logo from '../../assets/react.svg'
+import { useUser } from '../../context/UserContext'
 
-
-
-function Navigation() {
-
+function DoctorNavigation() {
   const navigate = useNavigate()
   const { user, logout } = useUser()
 
@@ -17,122 +13,105 @@ function Navigation() {
   }
 
   const linkBase =
-    'flex items-center gap-2 rounded-2xl px-6 py-2 text-left transition'
+    'flex items-center gap-3 rounded-2xl px-5 py-3 text-left text-[14px] transition'
 
   return (
-    <aside className="sticky top-0 h-screen w-70 shrink-0 border-r border-gray-200 bg-white flex flex-col justify-between">
+    <aside className="sticky top-0 flex h-screen w-72 shrink-0 flex-col justify-between border-r border-gray-200 bg-white">
       <div>
-        <div className="px-8 py-8 border-b border-gray-200">
+        <div className="border-b border-gray-200 px-8 py-8">
           <div className="flex items-center gap-4">
             <img
               src={logo}
               alt="logo"
-              className="h-16 w-16 rounded-2xl object-cover"
+              className="h-16 w-16 rounded-2xl bg-sky-50 object-cover p-3"
             />
             <div>
-              <h2 className="text-[20px] font-semibold text-slate-900">
-                MedSystem
-              </h2>
-              <h4 className="mt-1 text-[16px] font-normal text-gray-500">
-                Пациент
-              </h4>
+              <h2 className="text-[20px] font-semibold text-slate-900">MedSystem</h2>
+              <h4 className="mt-1 text-[15px] font-normal text-gray-500">Доктор</h4>
             </div>
           </div>
         </div>
 
         <div className="px-6 py-6">
-          <div className="flex flex-col gap-1">
+          <div className="flex flex-col gap-2">
             <NavLink
               to="/doctor"
               end
               className={({ isActive }) =>
-                `${linkBase} ${isActive
-                  ? 'bg-sky-700 text-white'
-                  : 'text-slate-900 hover:bg-sky-700 hover:text-white'
+                `${linkBase} ${
+                  isActive
+                    ? 'bg-sky-700 font-semibold text-white'
+                    : 'text-slate-900 hover:bg-slate-100'
                 }`
               }
             >
-              <img src={house} alt="" className="h-6 w-6" />
-              <span className="text-[15px] font-semibold">Главная</span>
+              <House className="h-5 w-5" />
+              <span>Главная</span>
             </NavLink>
-
-
 
             <NavLink
               to="/doctor/schedule"
               className={({ isActive }) =>
-                `${linkBase} ${isActive
-                  ? 'bg-sky-700 text-white'
-                  : 'text-slate-900 hover:bg-sky-700 hover:text-white'
+                `${linkBase} ${
+                  isActive
+                    ? 'bg-sky-700 font-semibold text-white'
+                    : 'text-slate-900 hover:bg-slate-100'
                 }`
               }
             >
-              <svg width="24px" height="24px" viewBox="0 0 24.00 24.00" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="#5689cd" transform="matrix(1, 0, 0, 1, 0, 0)">
-                <g id="SVGRepo_bgCarrier" stroke-width="0" />
-                <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round" />
-                <g id="SVGRepo_iconCarrier"> <path d="M3 10H21M7 3V5M17 3V5M6.2 21H17.8C18.9201 21 19.4802 21 19.908 20.782C20.2843 20.5903 20.5903 20.2843 20.782 19.908C21 19.4802 21 18.9201 21 17.8V8.2C21 7.07989 21 6.51984 20.782 6.09202C20.5903 5.71569 20.2843 5.40973 19.908 5.21799C19.4802 5 18.9201 5 17.8 5H6.2C5.0799 5 4.51984 5 4.09202 5.21799C3.71569 5.40973 3.40973 5.71569 3.21799 6.09202C3 6.51984 3 7.07989 3 8.2V17.8C3 18.9201 3 19.4802 3.21799 19.908C3.40973 20.2843 3.71569 20.5903 4.09202 20.782C4.51984 21 5.07989 21 6.2 21Z" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /> </g>
-              </svg>
-              <span className="text-[15px] font-medium">Расписание</span>
+              <CalendarDays className="h-5 w-5" />
+              <span>Расписание</span>
             </NavLink>
 
             <NavLink
               to="/doctor/appointments"
               className={({ isActive }) =>
-                `${linkBase} ${isActive
-                  ? 'bg-sky-700 text-white'
-                  : 'text-slate-900 hover:bg-sky-700 hover:text-white'
+                `${linkBase} ${
+                  isActive
+                    ? 'bg-sky-700 font-semibold text-white'
+                    : 'text-slate-900 hover:bg-slate-100'
                 }`
               }
             >
-              <svg width="24px" height="24px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-
-                <g id="SVGRepo_bgCarrier" stroke-width="0" />
-
-                <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round" />
-
-                <g id="SVGRepo_iconCarrier"> <path fill-rule="evenodd" clip-rule="evenodd" d="M8.94513 1.25H15.0549C16.4225 1.24998 17.5248 1.24996 18.3918 1.36652C19.2919 1.48754 20.0497 1.74643 20.6517 2.34835C21.2536 2.95027 21.5125 3.70814 21.6335 4.60825C21.75 5.47522 21.75 6.57754 21.75 7.94513V16.0549C21.75 17.4225 21.75 18.5248 21.6335 19.3918C21.5125 20.2919 21.2536 21.0497 20.6517 21.6517C20.0497 22.2536 19.2919 22.5125 18.3918 22.6335C17.5248 22.75 16.4225 22.75 15.0549 22.75H8.94513C8.63162 22.75 8.33204 22.75 8.04605 22.7486C8.03082 22.7495 8.01546 22.75 8 22.75C7.98169 22.75 7.96353 22.7493 7.94555 22.7481C7.02806 22.7424 6.25306 22.7202 5.60825 22.6335C4.70814 22.5125 3.95027 22.2536 3.34835 21.6517C2.74643 21.0497 2.48754 20.2919 2.36652 19.3918C2.2704 18.6768 2.25356 17.8018 2.25062 16.75H2C1.58579 16.75 1.25 16.4142 1.25 16C1.25 15.5858 1.58579 15.25 2 15.25H2.25V12.75H2C1.58579 12.75 1.25 12.4142 1.25 12C1.25 11.5858 1.58579 11.25 2 11.25H2.25V8.75H2C1.58579 8.75 1.25 8.41421 1.25 8C1.25 7.58579 1.58579 7.25 2 7.25H2.25062C2.25356 6.19818 2.2704 5.32319 2.36652 4.60825C2.48754 3.70814 2.74643 2.95027 3.34835 2.34835C3.95027 1.74643 4.70814 1.48754 5.60825 1.36652C6.47522 1.24996 7.57754 1.24998 8.94513 1.25ZM3.75 8.75H4C4.41421 8.75 4.75 8.41421 4.75 8C4.75 7.58579 4.41421 7.25 4 7.25H3.75078C3.75398 6.2042 3.77029 5.42437 3.85315 4.80812C3.9518 4.07435 4.13225 3.68577 4.40901 3.40901C4.68577 3.13225 5.07434 2.9518 5.80812 2.85315C6.2098 2.79914 6.68097 2.77341 7.25 2.76115V21.2389C6.68097 21.2266 6.2098 21.2009 5.80812 21.1469C5.07434 21.0482 4.68577 20.8678 4.40901 20.591C4.13225 20.3142 3.9518 19.9257 3.85315 19.1919C3.77029 18.5756 3.75398 17.7958 3.75078 16.75H4C4.41421 16.75 4.75 16.4142 4.75 16C4.75 15.5858 4.41421 15.25 4 15.25H3.75V12.75H4C4.41421 12.75 4.75 12.4142 4.75 12C4.75 11.5858 4.41421 11.25 4 11.25H3.75V8.75ZM8.75 21.25C8.83184 21.25 8.91516 21.25 9 21.25H15C16.4354 21.25 17.4365 21.2484 18.1919 21.1469C18.9257 21.0482 19.3142 20.8678 19.591 20.591C19.8678 20.3142 20.0482 19.9257 20.1469 19.1919C20.2484 18.4365 20.25 17.4354 20.25 16V8C20.25 6.56458 20.2484 5.56347 20.1469 4.80812C20.0482 4.07435 19.8678 3.68577 19.591 3.40901C19.3142 3.13225 18.9257 2.9518 18.1919 2.85315C17.4365 2.75159 16.4354 2.75 15 2.75H9C8.91516 2.75 8.83184 2.75001 8.75 2.75004V21.25ZM10.75 6.5C10.75 6.08579 11.0858 5.75 11.5 5.75H16.5C16.9142 5.75 17.25 6.08579 17.25 6.5C17.25 6.91421 16.9142 7.25 16.5 7.25H11.5C11.0858 7.25 10.75 6.91421 10.75 6.5ZM10.75 10C10.75 9.58579 11.0858 9.25 11.5 9.25H16.5C16.9142 9.25 17.25 9.58579 17.25 10C17.25 10.4142 16.9142 10.75 16.5 10.75H11.5C11.0858 10.75 10.75 10.4142 10.75 10Z" fill="#000000" /> </g>
-
-              </svg>
-              <span className="text-[15px] font-medium">Приемы</span>
+              <NotebookPen className="h-5 w-5" />
+              <span>Приемы</span>
             </NavLink>
 
             <NavLink
               to="/doctor/profile"
               className={({ isActive }) =>
-                `${linkBase} ${isActive
-                  ? 'bg-sky-700 text-white'
-                  : 'text-slate-900 hover:bg-sky-700 hover:text-white'
+                `${linkBase} ${
+                  isActive
+                    ? 'bg-sky-700 font-semibold text-white'
+                    : 'text-slate-900 hover:bg-slate-100'
                 }`
               }
             >
-              <svg width="24px" height="24px" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" stroke-width="3" stroke="#000000" fill="none">
-                <g id="SVGRepo_bgCarrier" stroke-width="0" />
-                <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round" />
-                <g id="SVGRepo_iconCarrier">
-                  <circle cx="32" cy="18.14" r="11.14" />
-                  <path d="M54.55,56.85A22.55,22.55,0,0,0,32,34.3h0A22.55,22.55,0,0,0,9.45,56.85Z" />
-                </g>
-              </svg>
-              <span className="text-[15px] font-medium">Профиль</span>
+              <UserRound className="h-5 w-5" />
+              <span>Профиль</span>
             </NavLink>
           </div>
         </div>
       </div>
 
-      <div className="border-t border-gray-200 pl-7 pr-5 py-7">
-        <div className="mb-5 px-5">
-          <h3 className="text-[18px] font-medium text-slate-900">{user.firstName} {user.lastName}</h3>
+      <div className="border-t border-gray-200 px-6 py-7">
+        <div className="rounded-3xl bg-slate-50 px-5 py-4">
+          <h3 className="text-[17px] font-medium text-slate-900">
+            {user.firstName} {user.lastName}
+          </h3>
           <h4 className="text-[14px] text-sky-600">{user.email}</h4>
         </div>
 
-        <button onClick={handleLogout} className="flex w-full items-center gap-2 rounded-2xl px-5 py-2 text-left text-slate-900 transition hover:bg-sky-700 hover:text-white">
-          <img src={exit} alt="" className="h-6 w-6" />
-          <span className="text-[15px] font-semibold">Выйти</span>
+        <button
+          onClick={handleLogout}
+          className="mt-4 inline-flex w-full items-center gap-2 rounded-2xl px-5 py-3 text-left text-[14px] font-semibold text-slate-900 transition hover:bg-slate-100"
+        >
+          <LogOut className="h-5 w-5" />
+          <span>Выйти</span>
         </button>
       </div>
     </aside>
   )
 }
 
-export default Navigation
-
+export default DoctorNavigation
