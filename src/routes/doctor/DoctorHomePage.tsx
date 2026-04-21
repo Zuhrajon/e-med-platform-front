@@ -1,287 +1,156 @@
-// import { CalendarDays, Clock3, Users, TrendingUp } from 'lucide-react'
-// import { useUser } from '../../context/UserContext'
-// import TodayAppointmentsSection from '../../components/doctor/TodayAppointmentsSection'
-// import LatestProtocolsSection from '../../components/doctor/LatestProtocolsSection'
-// import type {
-//   DoctorDashboardStats,
-//   DoctorProtocol,
-//   DoctorTodayAppointment,
-// } from '../../type/doctor'
-
-// function getFormattedToday() {
-//   const today = new Date()
-
-//   return new Intl.DateTimeFormat('ru-RU', {
-//     weekday: 'long',
-//     day: 'numeric',
-//     month: 'long',
-//   }).format(today)
-// }
-
-// export default function DoctorHomePage() {
-//   const { user } = useUser()
-
-//   // ВРЕМЕННЫЕ ДАННЫЕ
-//   // Потом здесь можно сделать запросы к бэкенду:
-//   // useEffect(() => { fetchDoctorDashboard() }, [])
-
-//   const stats: DoctorDashboardStats = {
-//     appointmentsToday: 3,
-//     waitingPatients: 1,
-//     patientsThisMonth: 87,
-//     rating: 4.8,
-//   }
-
-//   const todayAppointments: DoctorTodayAppointment[] = [
-//     {
-//       id: '1',
-//       patientId: 'p1',
-//       patientName: 'Иванова Мария Петровна',
-//       complaint: 'Профилактический осмотр',
-//       time: '10:00',
-//     },
-//     {
-//       id: '2',
-//       patientId: 'p2',
-//       patientName: 'Петров Алексей Сергеевич',
-//       complaint: 'Консультация',
-//       time: '11:30',
-//     },
-//     {
-//       id: '3',
-//       patientId: 'p3',
-//       patientName: 'Сидорова Елена Викторовна',
-//       complaint: 'Повторный приём',
-//       time: '14:00',
-//     },
-//   ]
-
-//   const latestProtocols: DoctorProtocol[] = [
-//     {
-//       id: 'protocol-1',
-//       patientId: 'p10',
-//       patientName: 'Новикова А.С.',
-//       diagnosis: 'ОРВИ',
-//       createdAt: '28 марта 2026',
-//     },
-//     {
-//       id: 'protocol-2',
-//       patientId: 'p11',
-//       patientName: 'Смирнов Д.В.',
-//       diagnosis: 'Консультация',
-//       createdAt: '25 марта 2026',
-//     },
-//   ]
-
-//   const statCards = [
-//     {
-//       title: 'Приёмов сегодня',
-//       value: stats.appointmentsToday,
-//       icon: CalendarDays,
-//       iconBg: 'bg-sky-100',
-//       iconColor: 'text-sky-600',
-//     },
-//     {
-//       title: 'Ожидают приёма',
-//       value: stats.waitingPatients,
-//       icon: Clock3,
-//       iconBg: 'bg-amber-100',
-//       iconColor: 'text-amber-500',
-//     },
-//     {
-//       title: 'Пациентов за месяц',
-//       value: stats.patientsThisMonth,
-//       icon: Users,
-//       iconBg: 'bg-emerald-100',
-//       iconColor: 'text-emerald-600',
-//     },
-//     {
-//       title: 'Рейтинг',
-//       value: stats.rating,
-//       icon: TrendingUp,
-//       iconBg: 'bg-rose-100',
-//       iconColor: 'text-rose-500',
-//     },
-//   ]
-
-//   return (
-//     <div className="w-full bg-[#f7f7f8] px-6 py-10">
-//       <header>
-//         <h1 className="text-[28px] font-semibold text-slate-900">
-//           Добро пожаловать, {user.firstName}!
-//         </h1>
-//         <p className="mt-3 text-[18px] capitalize text-gray-500">
-//           Сегодня {getFormattedToday()}
-//         </p>
-//       </header>
-
-//       <section className="mt-10 grid grid-cols-1 gap-6 xl:grid-cols-2">
-//         {statCards.map((card) => {
-//           const Icon = card.icon
-
-//           return (
-//             <div
-//               key={card.title}
-//               className="flex min-h-[180px] items-center justify-between rounded-3xl border border-gray-200 bg-white px-9 py-8 shadow-sm"
-//             >
-//               <div>
-//                 <p className="text-[18px] text-gray-500">{card.title}</p>
-//                 <p className="mt-4 text-[22px] font-semibold text-slate-900">
-//                   {card.value}
-//                 </p>
-//               </div>
-
-//               <div
-//                 className={`flex h-18 w-18 items-center justify-center rounded-2xl ${card.iconBg}`}
-//               >
-//                 <Icon className={`h-8 w-8 ${card.iconColor}`} />
-//               </div>
-//             </div>
-//           )
-//         })}
-//       </section>
-
-//       <div className="mt-10">
-//         <TodayAppointmentsSection appointments={todayAppointments} variant="compact" />
-//       </div>
-
-//       <div className="mt-10">
-//         <LatestProtocolsSection protocols={latestProtocols} />
-//       </div>
-//     </div>
-//   )
-// }
-
-import { useMemo } from 'react'
-import { CalendarDays, Clock3, Users, TrendingUp } from 'lucide-react'
+import { CalendarDays, Clock3, Users } from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useUser } from '../../context/UserContext'
-import { useAppointments } from '../../context/AppointmentsContext'
-import TodayAppointmentsSection from '../../components/doctor/TodayAppointmentsSection'
-import LatestProtocolsSection from '../../components/doctor/LatestProtocolsSection'
-import type { DoctorDashboardStats, DoctorProtocol } from '../../type/doctor'
+import { formatVisitTime, listVisits, toDateInputValue, type Visit } from '../../lib/visits'
 
 function getFormattedToday() {
-  const today = new Date()
-
   return new Intl.DateTimeFormat('ru-RU', {
     weekday: 'long',
     day: 'numeric',
     month: 'long',
-  }).format(today)
+  }).format(new Date())
 }
 
 export default function DoctorHomePage() {
-  const { user } = useUser()
-  const { getDoctorAppointmentsByDate } = useAppointments()
+  const { user, accessToken } = useUser()
+  const [visits, setVisits] = useState<Visit[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState('')
 
-  const today = '13 апреля'
+  useEffect(() => {
+    if (!accessToken) return
 
-  const todayAppointments = useMemo(() => {
-    return getDoctorAppointmentsByDate(today)
-  }, [getDoctorAppointmentsByDate, today])
+    const today = toDateInputValue(new Date())
 
-  const stats: DoctorDashboardStats = {
-    appointmentsToday: todayAppointments.length,
-    waitingPatients: todayAppointments.filter((item) => !item.protocol).length,
-    patientsThisMonth: 87,
-    rating: 4.8,
-  }
+    const loadVisits = async () => {
+      setIsLoading(true)
+      setError('')
 
-  const latestProtocols: DoctorProtocol[] = [
-    {
-      id: 'protocol-1',
-      patientId: 'p10',
-      patientName: 'Новикова А.С.',
-      diagnosis: 'ОРВИ',
-      createdAt: '28 марта 2026',
-    },
-    {
-      id: 'protocol-2',
-      patientId: 'p11',
-      patientName: 'Смирнов Д.В.',
-      diagnosis: 'Консультация',
-      createdAt: '25 марта 2026',
-    },
-  ]
+      try {
+        const response = await listVisits(accessToken, { date: today })
+        setVisits(response.filter((item) => item.status === 'confirmed' || item.status === 'completed'))
+      } catch (loadError) {
+        setError(loadError instanceof Error ? loadError.message : 'Не удалось загрузить приёмы')
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    void loadVisits()
+  }, [accessToken])
+
+  const stats = useMemo(
+    () => ({
+      total: visits.length,
+      waiting: visits.filter((item) => item.status === 'confirmed').length,
+      completed: visits.filter((item) => item.status === 'completed').length,
+    }),
+    [visits],
+  )
 
   const statCards = [
     {
       title: 'Приёмов сегодня',
-      value: stats.appointmentsToday,
+      value: stats.total,
       icon: CalendarDays,
-      iconBg: 'bg-sky-100',
-      iconColor: 'text-sky-600',
+      tone: 'bg-sky-100 text-sky-600',
     },
     {
       title: 'Ожидают приёма',
-      value: stats.waitingPatients,
+      value: stats.waiting,
       icon: Clock3,
-      iconBg: 'bg-amber-100',
-      iconColor: 'text-amber-500',
+      tone: 'bg-amber-100 text-amber-500',
     },
     {
-      title: 'Пациентов за месяц',
-      value: stats.patientsThisMonth,
+      title: 'Завершено',
+      value: stats.completed,
       icon: Users,
-      iconBg: 'bg-emerald-100',
-      iconColor: 'text-emerald-600',
-    },
-    {
-      title: 'Рейтинг',
-      value: stats.rating,
-      icon: TrendingUp,
-      iconBg: 'bg-rose-100',
-      iconColor: 'text-rose-500',
+      tone: 'bg-emerald-100 text-emerald-600',
     },
   ]
 
   return (
     <div className="w-full bg-[#f7f7f8] px-6 py-10">
-      <header>
-        <h1 className="text-[28px] font-semibold text-slate-900">
-          Добро пожаловать, {user.firstName}!
-        </h1>
-        <p className="mt-3 text-[18px] capitalize text-gray-500">
-          Сегодня {getFormattedToday()}
-        </p>
+      <header className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+        <div>
+          <h1 className="text-[28px] font-semibold text-slate-900">
+            Добро пожаловать, {user.firstName || 'доктор'}!
+          </h1>
+          <p className="mt-3 text-[18px] capitalize text-gray-500">Сегодня {getFormattedToday()}</p>
+        </div>
+
+        <Link
+          to="/doctor/appointments"
+          className="rounded-2xl bg-sky-700 px-5 py-3 text-sm font-semibold text-white transition hover:bg-sky-800"
+        >
+          Открыть все приёмы
+        </Link>
       </header>
 
-      <section className="mt-10 grid grid-cols-1 gap-6 xl:grid-cols-2">
+      {error ? (
+        <div className="mt-8 rounded-3xl border border-red-200 bg-red-50 px-5 py-4 text-red-700">
+          {error}
+        </div>
+      ) : null}
+
+      <section className="mt-10 grid grid-cols-1 gap-6 xl:grid-cols-3">
         {statCards.map((card) => {
           const Icon = card.icon
 
           return (
             <div
               key={card.title}
-              className="flex min-h-[180px] items-center justify-between rounded-3xl border border-gray-200 bg-white px-9 py-8 shadow-sm"
+              className="flex min-h-[160px] items-center justify-between rounded-3xl border border-gray-200 bg-white px-8 py-8 shadow-sm"
             >
               <div>
                 <p className="text-[18px] text-gray-500">{card.title}</p>
                 <p className="mt-4 text-[22px] font-semibold text-slate-900">
-                  {card.value}
+                  {isLoading ? '...' : card.value}
                 </p>
               </div>
 
-              <div
-                className={`flex h-18 w-18 items-center justify-center rounded-2xl ${card.iconBg}`}
-              >
-                <Icon className={`h-8 w-8 ${card.iconColor}`} />
+              <div className={`flex h-16 w-16 items-center justify-center rounded-2xl ${card.tone}`}>
+                <Icon className="h-7 w-7" />
               </div>
             </div>
           )
         })}
       </section>
 
-      <div className="mt-10">
-        <TodayAppointmentsSection
-          appointments={todayAppointments}
-          variant="compact"
-        />
-      </div>
+      <section className="mt-10 rounded-3xl border border-gray-200 bg-white px-8 py-8 shadow-sm">
+        <div className="flex items-center justify-between">
+          <h2 className="text-[24px] font-semibold text-slate-900">Сегодняшние пациенты</h2>
+          <span className="text-sm text-slate-500">Только подтверждённые и завершённые записи</span>
+        </div>
 
-      <div className="mt-10">
-        <LatestProtocolsSection protocols={latestProtocols} />
-      </div>
+        <div className="mt-8 space-y-4">
+          {isLoading ? (
+            <div className="text-[18px] text-slate-500">Загрузка приёмов...</div>
+          ) : visits.length ? (
+            visits.map((visit) => (
+              <article
+                key={visit.visit_id}
+                className="flex flex-col gap-4 rounded-3xl border border-gray-200 px-6 py-5 md:flex-row md:items-center md:justify-between"
+              >
+                <div>
+                  <h3 className="text-[20px] font-semibold text-slate-900">
+                    {visit.patient_full_name}
+                  </h3>
+                  <p className="mt-1 text-[15px] text-slate-500">{visit.patient_phone_number || '—'}</p>
+                </div>
+                <div className="text-sm text-slate-600">
+                  {formatVisitTime(visit.scheduled_at)}
+                </div>
+              </article>
+            ))
+          ) : (
+            <div className="rounded-3xl border border-dashed border-gray-300 px-6 py-10 text-center text-[18px] text-gray-500">
+              На сегодня подтверждённых приёмов нет.
+            </div>
+          )}
+        </div>
+      </section>
     </div>
   )
 }

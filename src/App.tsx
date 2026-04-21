@@ -4,6 +4,7 @@ import { Navigate, Outlet, Route, Routes } from 'react-router-dom'
 import Layout from './components/Layout'
 import { useUser } from './context/UserContext'
 
+import ForgotPasswordPage from './routes/auth/ForgotPasswordPage'
 import LoginPage from './routes/auth/LoginPage'
 import RegisterPage from './routes/auth/RegisterPage'
 
@@ -16,16 +17,19 @@ import ProfilePage from './routes/patient/ProfilePage'
 
 import DoctorHomePage from './routes/doctor/DoctorHomePage'
 import DoctorAppointmentsPage from './routes/doctor/DoctorAppointmentsPage'
+import DoctorPatientsPage from './routes/doctor/DoctorPatientsPage'
 import DoctorSchedulePage from './routes/doctor/DoctorSchedulePage'
 import DoctorProfilePage from './routes/doctor/DoctorProfilePage'
 
 import AdminHomePage from './routes/admin/AdminHomePage'
 import AdminAppointmentsPage from './routes/admin/AdminAppointmentsPage'
 import AdminFakeDataPage from './routes/admin/AdminFakeDataPage'
-import AdminSettingsPage from './routes/admin/AdminSettingsPage'
+import AdminProfilePage from './routes/admin/AdminProfilePage'
 import AdminUsersPage from './routes/admin/AdminUsersPage'
+import ReceptionProfilePage from './routes/reception/ReceptionProfilePage'
+import ReceptionVisitsPage from './routes/reception/ReceptionVisitsPage'
 
-function RequireAuth({ roles }: { roles: Array<'patient' | 'doctor' | 'admin'> }) {
+function RequireAuth({ roles }: { roles: Array<'patient' | 'doctor' | 'admin' | 'receptionist'> }) {
   const { isAuthenticated, isBootstrapping, user } = useUser()
 
   if (isBootstrapping) {
@@ -39,6 +43,7 @@ function RequireAuth({ roles }: { roles: Array<'patient' | 'doctor' | 'admin'> }
   if (!roles.includes(user.role)) {
     if (user.role === 'doctor') return <Navigate to="/doctor" replace />
     if (user.role === 'admin') return <Navigate to="/admin" replace />
+    if (user.role === 'receptionist') return <Navigate to="/reception" replace />
     return <Navigate to="/app" replace />
   }
 
@@ -60,6 +65,10 @@ function DefaultRedirect() {
     return <Navigate to="/admin" replace />
   }
 
+  if (user.role === 'receptionist') {
+    return <Navigate to="/reception" replace />
+  }
+
   return <Navigate to="/app" replace />
 }
 
@@ -67,6 +76,7 @@ export default function App() {
   return (
     <Routes>
       <Route path="/" element={<LoginPage />} />
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/register" element={<RegisterPage />} />
 
       <Route element={<RequireAuth roles={['patient']} />}>
@@ -84,6 +94,7 @@ export default function App() {
         <Route path="/doctor" element={<Layout />}>
           <Route index element={<DoctorHomePage />} />
           <Route path="appointments" element={<DoctorAppointmentsPage />} />
+          <Route path="patients" element={<DoctorPatientsPage />} />
           <Route path="schedule" element={<DoctorSchedulePage />} />
           <Route path="profile" element={<DoctorProfilePage />} />
         </Route>
@@ -94,8 +105,17 @@ export default function App() {
           <Route index element={<AdminHomePage />} />
           <Route path="appointments" element={<AdminAppointmentsPage />} />
           <Route path="fake-data" element={<AdminFakeDataPage />} />
+          <Route path="profile" element={<AdminProfilePage />} />
           <Route path="users" element={<AdminUsersPage />} />
-          <Route path="settings" element={<AdminSettingsPage />} />
+        </Route>
+      </Route>
+
+      <Route element={<RequireAuth roles={['receptionist']} />}>
+        <Route path="/reception" element={<Layout />}>
+          <Route index element={<ReceptionVisitsPage />} />
+          <Route path="visits" element={<ReceptionVisitsPage />} />
+          <Route path="patients" element={<DoctorPatientsPage />} />
+          <Route path="profile" element={<ReceptionProfilePage />} />
         </Route>
       </Route>
 

@@ -1,4 +1,11 @@
-import { CalendarDays, House, LogOut, NotebookPen, UserRound } from 'lucide-react'
+import {
+  CalendarDays,
+  House,
+  LogOut,
+  NotebookPen,
+  UserRound,
+  UsersRound,
+} from 'lucide-react'
 import { NavLink, useNavigate } from 'react-router-dom'
 import logo from '../../assets/react.svg'
 import { useUser } from '../../context/UserContext'
@@ -74,7 +81,21 @@ function DoctorNavigation() {
               }
             >
               <NotebookPen className="h-5 w-5" />
-              <span>Приемы</span>
+              <span>Приёмы</span>
+            </NavLink>
+
+            <NavLink
+              to="/doctor/patients"
+              className={({ isActive }) =>
+                `${linkBase} ${
+                  isActive
+                    ? 'bg-sky-700 font-semibold text-white'
+                    : 'text-slate-900 hover:bg-slate-100'
+                }`
+              }
+            >
+              <UsersRound className="h-5 w-5" />
+              <span>Пациенты</span>
             </NavLink>
 
             <NavLink

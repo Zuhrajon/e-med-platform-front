@@ -8,6 +8,7 @@ import {
   type ReactNode,
 } from 'react'
 import {
+  type BackendRole,
   changePasswordRequest,
   loginRequest,
   logoutRequest,
@@ -29,6 +30,7 @@ export type Appointment = {
 
 export type UserProfile = {
   role: AppRole
+  backendRole: BackendRole
   firstName: string
   lastName: string
   middleName: string
@@ -96,6 +98,7 @@ const PROFILE_STORAGE_KEY = 'user-profile'
 
 const emptyUser: UserProfile = {
   role: 'patient',
+  backendRole: 'patient',
   firstName: '',
   lastName: '',
   middleName: '',
@@ -234,6 +237,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
         ...user,
         ...baseProfile,
         role,
+        backendRole: auth.role,
       }
 
       setSession(nextSession)
@@ -320,6 +324,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
       applyAuthResult(response, {
         role: 'patient',
+        backendRole: 'patient',
         firstName: data.firstName,
         lastName: data.lastName,
         middleName: data.middleName,
@@ -366,7 +371,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
     persistSession(nextSession)
 
     const mappedRole = mapBackendRoleToAppRole(response.role)
-    updateUser({ role: mappedRole })
+    updateUser({ role: mappedRole, backendRole: response.role })
   }, [session?.refreshToken, updateUser])
 
   const changePassword = useCallback(
@@ -392,7 +397,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
       setSession(nextSession)
       persistSession(nextSession)
 
-      updateUser({ role: mapBackendRoleToAppRole(response.role) })
+      updateUser({ role: mapBackendRoleToAppRole(response.role), backendRole: response.role })
     },
     [session?.accessToken, updateUser],
   )

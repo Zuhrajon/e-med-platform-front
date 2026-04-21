@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from 'react'
-import AddWorkingDayModal from '../../components/doctor/AddWorkingDayModal'
 import AppointmentSettingsSection from '../../components/doctor/AppointmentSettingsSection'
 import ExceptionsSection from '../../components/doctor/ExceptionsSection'
 import ScheduleInfo from '../../components/doctor/ScheduleInfo'
@@ -9,11 +8,8 @@ import { useUser } from '../../context/UserContext'
 import { listHolidays } from '../../lib/admin'
 
 export default function DoctorSchedulePage() {
-  const { schedule, saveWorkingDay, removeWorkingDay, saveSettings } =
-    useDoctorSchedule()
+  const { schedule, saveSettings } = useDoctorSchedule()
   const { accessToken } = useUser()
-
-  const [isWorkingDayModalOpen, setIsWorkingDayModalOpen] = useState(false)
   const [holidayExceptions, setHolidayExceptions] = useState<
     Array<{ id: string; date: string; reason: string }>
   >([])
@@ -52,10 +48,7 @@ export default function DoctorSchedulePage() {
   }, [accessToken])
 
   const exceptions = useMemo(
-    () =>
-      holidayExceptions.length
-        ? holidayExceptions
-        : schedule.exceptions,
+    () => (holidayExceptions.length ? holidayExceptions : schedule.exceptions),
     [holidayExceptions, schedule.exceptions],
   )
 
@@ -64,17 +57,13 @@ export default function DoctorSchedulePage() {
       <header>
         <h1 className="text-[25px] font-semibold text-slate-900">Расписание</h1>
         <p className="mt-2 text-[17px] text-gray-500">
-          Управляйте рабочими часами и настройками приема. Исключения задаются
-          администратором и доступны только для просмотра.
+          Рабочие часы и исключения задаются администратором. Врач может только
+          просматривать текущее расписание и свои настройки приёма.
         </p>
       </header>
 
       <div className="mt-10 space-y-10">
-        <WorkingHoursSection
-          workingDays={schedule.workingDays}
-          onAddClick={() => setIsWorkingDayModalOpen(true)}
-          onRemoveDay={removeWorkingDay}
-        />
+        <WorkingHoursSection workingDays={schedule.workingDays} />
 
         <ExceptionsSection exceptions={exceptions} />
 
@@ -85,12 +74,6 @@ export default function DoctorSchedulePage() {
 
         <ScheduleInfo />
       </div>
-
-      <AddWorkingDayModal
-        isOpen={isWorkingDayModalOpen}
-        onClose={() => setIsWorkingDayModalOpen(false)}
-        onSave={saveWorkingDay}
-      />
     </div>
   )
 }

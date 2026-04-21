@@ -1,63 +1,121 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { useAppointments } from '../../context/AppointmentsContext'
-import { useDoctorSchedule } from '../../context/DoctorScheduleContext'
 import { useUser } from '../../context/UserContext'
-import { formatDateLabel } from '../../utils/schedule'
 import { getDoctors, mapDoctorFromBackend, type DoctorListItem } from '../../lib/doctors'
+import {
+  createVisit,
+  getAvailableSlots,
+  toDateInputValue,
+  type AvailableSlot,
+} from '../../lib/visits'
 
-function getNext14Days() {
-  return Array.from({ length: 14 }, (_, index) => {
-    const date = new Date()
-    date.setDate(date.getDate() + index)
-    return date
-  })
+function getNextWorkdays(daysCount: number) {
+  const dates: string[] = []
+  const cursor = new Date()
+
+  while (dates.length < daysCount) {
+    const weekday = cursor.getDay()
+    if (weekday !== 0 && weekday !== 6) {
+      dates.push(toDateInputValue(cursor))
+    }
+    cursor.setDate(cursor.getDate() + 1)
+  }
+
+  return dates
+}
+
+function formatDateLabel(dateValue: string) {
+  const [year, month, day] = dateValue.split('-').map(Number)
+  const date = new Date(year, (month || 1) - 1, day || 1)
+
+  return new Intl.DateTimeFormat('ru-RU', {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'long',
+  }).format(date)
+}
+
+function formatSlotTime(slot: AvailableSlot) {
+  const start = new Date(slot.start_at)
+
+  return new Intl.DateTimeFormat('ru-RU', {
+    hour: '2-digit',
+    minute: '2-digit',
+    timeZone: 'Europe/Moscow',
+  }).format(start)
 }
 
 export default function DoctorDetailsPage() {
   const { id } = useParams()
   const navigate = useNavigate()
   const { accessToken } = useUser()
-  const { addAppointment } = useAppointments()
-  const { getAvailableSlotsForDate } = useDoctorSchedule()
 
   const [doctor, setDoctor] = useState<DoctorListItem | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+  const [isDoctorLoading, setIsDoctorLoading] = useState(true)
+  const [doctorError, setDoctorError] = useState('')
+  const [selectedDate, setSelectedDate] = useState<string>(() => getNextWorkdays(1)[0] ?? '')
+  const [slots, setSlots] = useState<AvailableSlot[]>([])
+  const [selectedSlot, setSelectedSlot] = useState('')
+  const [isSlotsLoading, setIsSlotsLoading] = useState(false)
+  const [slotsError, setSlotsError] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const availableDates = useMemo(() => getNextWorkdays(10), [])
 
   useEffect(() => {
     if (!accessToken || !id) return
 
     const loadDoctor = async () => {
-      setIsLoading(true)
+      setIsDoctorLoading(true)
+      setDoctorError('')
 
       try {
         const doctors = await getDoctors(accessToken)
-        const mapped = doctors.map(mapDoctorFromBackend)
+        const mapped = doctors.map(mapDoctorFromBackend).filter((item) => item.isActive)
         setDoctor(mapped.find((item) => item.id === id) ?? null)
       } catch {
+        setDoctorError('Не удалось загрузить данные врача')
         setDoctor(null)
       } finally {
-        setIsLoading(false)
+        setIsDoctorLoading(false)
       }
     }
 
-    loadDoctor()
+    void loadDoctor()
   }, [accessToken, id])
 
-  const availableDates = useMemo(() => {
-    return getNext14Days().filter((date) => getAvailableSlotsForDate(date).length > 0)
-  }, [getAvailableSlotsForDate])
+  useEffect(() => {
+    if (!accessToken || !doctor || !selectedDate) return
 
-  const [selectedDate, setSelectedDate] = useState<Date | null>(availableDates[0] ?? null)
-  const [selectedTime, setSelectedTime] = useState('')
+    const loadSlots = async () => {
+      setIsSlotsLoading(true)
+      setSlotsError('')
+      setSelectedSlot('')
 
-  const availableTimes = useMemo(() => {
-    if (!selectedDate) return []
-    return getAvailableSlotsForDate(selectedDate)
-  }, [selectedDate, getAvailableSlotsForDate])
+      try {
+        const response = await getAvailableSlots(accessToken, doctor.id, selectedDate)
+        setSlots(response)
+      } catch {
+        setSlots([])
+        setSlotsError('Не удалось загрузить свободные окна врача')
+      } finally {
+        setIsSlotsLoading(false)
+      }
+    }
 
-  if (isLoading) {
+    void loadSlots()
+  }, [accessToken, doctor, selectedDate])
+
+  if (isDoctorLoading) {
     return <div className="py-10 text-xl text-slate-600">Загрузка врача...</div>
+  }
+
+  if (doctorError) {
+    return (
+      <div className="rounded-3xl border border-red-200 bg-red-50 px-6 py-5 text-red-700">
+        {doctorError}
+      </div>
+    )
   }
 
   if (!doctor) {
@@ -68,27 +126,36 @@ export default function DoctorDetailsPage() {
     )
   }
 
-  const initials = doctor.name
+  const currentDoctor = doctor
+
+  const initials = currentDoctor.name
     .split(' ')
     .map((part) => part[0])
     .join('')
     .slice(0, 2)
 
-  const handleBook = () => {
-    if (!selectedDate || !selectedTime) return
+  async function handleBook() {
+    if (!accessToken || !selectedSlot) return
 
-    addAppointment({
-      id: crypto.randomUUID(),
-      doctorId: doctor.id,
-      doctorName: doctor.name,
-      specialty: doctor.specialty,
-      date: formatDateLabel(selectedDate),
-      time: selectedTime,
-      status: 'Подтверждена',
-      reason: 'Консультация',
-    })
+    setIsSubmitting(true)
+    setSlotsError('')
 
-    navigate('/app/appointments')
+    try {
+      await createVisit(accessToken, {
+        doctor_user_id: currentDoctor.id,
+        scheduled_at: selectedSlot,
+      })
+
+      navigate('/app/appointments', {
+        state: {
+          success: 'Запись создана. Окно заблокировано и ожидает подтверждения регистратурой.',
+        },
+      })
+    } catch (error) {
+      setSlotsError(error instanceof Error ? error.message : 'Не удалось создать запись')
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -107,47 +174,41 @@ export default function DoctorDetailsPage() {
           </div>
 
           <div className="flex-1">
-            <h1 className="text-3xl font-semibold text-slate-900">{doctor.name}</h1>
-            <p className="mt-2 text-xl text-gray-500">{doctor.specialty}</p>
-            <p className="mt-3 text-lg text-gray-500">
-              ⭐ {doctor.rating} ({doctor.reviewsCount}) Стаж {doctor.experience}
-            </p>
+            <h1 className="text-3xl font-semibold text-slate-900">{currentDoctor.name}</h1>
+            <p className="mt-2 text-xl text-gray-500">{currentDoctor.specialty}</p>
+            <p className="mt-3 text-lg text-gray-500">Стаж {currentDoctor.experience}</p>
           </div>
         </div>
 
         <div className="mt-10">
           <h2 className="text-2xl font-semibold text-slate-900">О враче</h2>
-          <p className="mt-4 text-[18px] leading-8 text-slate-600">{doctor.description}</p>
+          <p className="mt-4 text-[18px] leading-8 text-slate-600">{currentDoctor.description}</p>
         </div>
 
         <div className="mt-10">
           <h2 className="text-2xl font-semibold text-slate-900">Запись на приём</h2>
           <div className="mt-4 rounded-2xl bg-slate-50 p-4">
             <p className="text-sm text-slate-500">Стоимость приёма</p>
-            <p className="mt-2 text-2xl font-semibold text-slate-900">{doctor.price} ₽</p>
+            <p className="mt-2 text-2xl font-semibold text-slate-900">{currentDoctor.price} ₽</p>
           </div>
 
           <div className="mt-8">
-            <h3 className="text-xl font-medium text-slate-900">Выберите дату</h3>
+            <h3 className="text-xl font-medium text-slate-900">Свободные даты</h3>
             <div className="mt-4 flex flex-wrap gap-3">
-              {availableDates.map((date) => {
-                const label = formatDateLabel(date)
-                const isSelected = selectedDate?.toDateString() === date.toDateString()
+              {availableDates.map((dateValue) => {
+                const isSelected = selectedDate === dateValue
 
                 return (
                   <button
-                    key={label}
-                    onClick={() => {
-                      setSelectedDate(date)
-                      setSelectedTime('')
-                    }}
+                    key={dateValue}
+                    onClick={() => setSelectedDate(dateValue)}
                     className={`rounded-xl border px-4 py-3 text-[16px] font-medium transition ${
                       isSelected
                         ? 'border-blue-500 bg-blue-50 text-blue-700'
                         : 'border-gray-200 bg-white text-slate-900 hover:bg-gray-50'
                     }`}
                   >
-                    {label}
+                    {formatDateLabel(dateValue)}
                   </button>
                 )
               })}
@@ -155,209 +216,51 @@ export default function DoctorDetailsPage() {
           </div>
 
           <div className="mt-8">
-            <h3 className="text-xl font-medium text-slate-900">Выберите время</h3>
-            <div className="mt-4 flex flex-wrap gap-3">
-              {availableTimes.map((time) => (
-                <button
-                  key={time}
-                  onClick={() => setSelectedTime(time)}
-                  className={`rounded-xl border px-4 py-4 text-[18px] font-medium transition ${
-                    selectedTime === time
-                      ? 'border-blue-500 bg-blue-50 text-slate-900'
-                      : 'border-gray-200 bg-white text-slate-900 hover:bg-gray-50'
-                  }`}
-                >
-                  {time}
-                </button>
-              ))}
-            </div>
+            <h3 className="text-xl font-medium text-slate-900">Свободные окна</h3>
+            {isSlotsLoading ? (
+              <div className="mt-4 rounded-2xl bg-slate-50 p-4 text-slate-600">Загрузка слотов...</div>
+            ) : slots.length ? (
+              <div className="mt-4 flex flex-wrap gap-3">
+                {slots.map((slot) => {
+                  const label = formatSlotTime(slot)
+
+                  return (
+                    <button
+                      key={slot.start_at}
+                      onClick={() => setSelectedSlot(slot.start_at)}
+                      className={`rounded-xl border px-4 py-4 text-[18px] font-medium transition ${
+                        selectedSlot === slot.start_at
+                          ? 'border-blue-500 bg-blue-50 text-slate-900'
+                          : 'border-gray-200 bg-white text-slate-900 hover:bg-gray-50'
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  )
+                })}
+              </div>
+            ) : (
+              <div className="mt-4 rounded-2xl border border-dashed border-slate-300 px-4 py-5 text-slate-500">
+                На выбранную дату свободных окон нет.
+              </div>
+            )}
           </div>
 
+          {slotsError ? (
+            <div className="mt-6 rounded-2xl border border-red-200 bg-red-50 px-4 py-4 text-red-700">
+              {slotsError}
+            </div>
+          ) : null}
+
           <button
-            onClick={handleBook}
-            className="mt-8 rounded-2xl bg-sky-700 px-8 py-4 text-lg font-medium text-white transition hover:bg-sky-800"
+            onClick={() => void handleBook()}
+            disabled={!selectedSlot || isSubmitting}
+            className="mt-8 rounded-2xl bg-sky-700 px-8 py-4 text-lg font-medium text-white transition hover:bg-sky-800 disabled:cursor-not-allowed disabled:bg-slate-400"
           >
-            Записаться на приём
+            {isSubmitting ? 'Создание записи...' : 'Создать запись'}
           </button>
         </div>
       </div>
     </div>
   )
 }
-
-// import { useMemo, useState } from 'react'
-// import { useNavigate, useParams } from 'react-router-dom'
-// import { doctorsData } from '../../data/doctors'
-// import { useAppointments } from '../../context/AppointmentsContext'
-// import { useDoctorSchedule } from '../../context/DoctorScheduleContext'
-// import { formatDateLabel } from '../../utils/schedule'
-
-// function getNext14Days() {
-//   return Array.from({ length: 14 }, (_, index) => {
-//     const date = new Date()
-//     date.setDate(date.getDate() + index)
-//     return date
-//   })
-// }
-
-// export default function DoctorDetailsPage() {
-//   const { id } = useParams()
-//   const navigate = useNavigate()
-//   const { addAppointment } = useAppointments()
-//   const { getAvailableSlotsForDate } = useDoctorSchedule()
-
-//   const doctor = useMemo(
-//     () => doctorsData.find((item) => item.id === id),
-//     [id],
-//   )
-
-//   const availableDates = useMemo(() => {
-//     return getNext14Days().filter((date) => getAvailableSlotsForDate(date).length > 0)
-//   }, [getAvailableSlotsForDate])
-
-//   const [selectedDate, setSelectedDate] = useState<Date | null>(availableDates[0] ?? null)
-
-//   const availableTimes = useMemo(() => {
-//     if (!selectedDate) return []
-//     return getAvailableSlotsForDate(selectedDate)
-//   }, [selectedDate, getAvailableSlotsForDate])
-
-//   const [selectedTime, setSelectedTime] = useState('')
-
-//   if (!doctor) {
-//     return (
-//       <div className="min-h-screen bg-[#f7f7f8] px-8 py-10">
-//         <div className="mx-auto max-w-5xl rounded-3xl bg-white p-8 shadow-sm">
-//           <h1 className="text-2xl font-semibold text-slate-900">Врач не найден</h1>
-//         </div>
-//       </div>
-//     )
-//   }
-
-//   const initials = doctor.name
-//     .split(' ')
-//     .map((part) => part[0])
-//     .join('')
-//     .slice(0, 2)
-
-//   const handleBook = () => {
-//     if (!selectedDate || !selectedTime) return
-
-//     addAppointment({
-//       id: crypto.randomUUID(),
-//       doctorId: doctor.id,
-//       doctorName: doctor.name,
-//       specialty: doctor.specialty,
-//       date: formatDateLabel(selectedDate),
-//       time: selectedTime,
-//       status: 'Подтверждена',
-//       reason: 'Консультация',
-//     })
-
-//     navigate('/app/appointments')
-//   }
-
-//   return (
-//     <div className="min-h-screen bg-[#f7f7f8] px-8 py-10">
-//       <div className="mx-auto max-w-5xl">
-//         <button
-//           onClick={() => navigate('/app/doctors')}
-//           className="mb-8 text-[18px] font-medium text-slate-900"
-//         >
-//           ← Назад к врачам
-//         </button>
-
-//         <div className="rounded-3xl border border-gray-200 bg-white p-8 shadow-sm">
-//           <div className="flex flex-col gap-6 md:flex-row md:items-center">
-//             <div className="flex h-28 w-28 items-center justify-center rounded-full bg-gray-100 text-4xl text-slate-900">
-//               {initials}
-//             </div>
-
-//             <div>
-//               <h1 className="text-[32px] font-semibold text-slate-900">{doctor.name}</h1>
-//               <p className="mt-2 inline-block rounded-full bg-blue-100 px-4 py-1 text-[18px] text-blue-700">
-//                 {doctor.specialty}
-//               </p>
-
-//               <div className="mt-5 flex flex-col gap-2 text-[18px] text-gray-500 md:flex-row md:gap-8">
-//                 <span>⭐ {doctor.rating} ({doctor.reviewsCount})</span>
-//                 <span>Стаж {doctor.experience}</span>
-//               </div>
-//             </div>
-//           </div>
-//         </div>
-
-//         <div className="mt-8 rounded-3xl border border-gray-200 bg-white p-8 shadow-sm">
-//           <h2 className="text-[24px] font-semibold text-slate-900">О враче</h2>
-//           <p className="mt-5 text-[18px] leading-8 text-gray-500">{doctor.description}</p>
-//         </div>
-
-//         <div className="mt-8 rounded-3xl border border-gray-200 bg-white p-8 shadow-sm">
-//           <h2 className="text-[24px] font-semibold text-slate-900">Запись на приём</h2>
-
-//           <div className="mt-6">
-//             <p className="text-[18px] text-gray-500">Стоимость приёма</p>
-//             <p className="mt-2 text-[32px] font-semibold text-slate-900">{doctor.price} ₽</p>
-//           </div>
-
-//           <div className="mt-10">
-//             <h3 className="text-[22px] font-semibold text-slate-900">Выберите дату</h3>
-
-//             <div className="mt-4 flex flex-wrap gap-3">
-//               {availableDates.map((date) => {
-//                 const label = formatDateLabel(date)
-//                 const isSelected =
-//                   selectedDate?.toDateString() === date.toDateString()
-
-//                 return (
-//                   <button
-//                     key={date.toISOString()}
-//                     onClick={() => {
-//                       setSelectedDate(date)
-//                       setSelectedTime('')
-//                     }}
-//                     className={`rounded-xl border px-4 py-3 text-[16px] font-medium transition ${
-//                       isSelected
-//                         ? 'border-blue-500 bg-blue-50 text-blue-700'
-//                         : 'border-gray-200 bg-white text-slate-900 hover:bg-gray-50'
-//                     }`}
-//                   >
-//                     {label}
-//                   </button>
-//                 )
-//               })}
-//             </div>
-//           </div>
-
-//           <div className="mt-10">
-//             <h3 className="text-[22px] font-semibold text-slate-900">Выберите время</h3>
-
-//             <div className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-3">
-//               {availableTimes.map((time) => (
-//                 <button
-//                   key={time}
-//                   onClick={() => setSelectedTime(time)}
-//                   className={`rounded-xl border px-4 py-4 text-[18px] font-medium transition ${
-//                     selectedTime === time
-//                       ? 'border-blue-500 bg-blue-50 text-slate-900'
-//                       : 'border-gray-200 bg-white text-slate-900 hover:bg-gray-50'
-//                   }`}
-//                 >
-//                   {time}
-//                 </button>
-//               ))}
-//             </div>
-//           </div>
-
-//           <button
-//             onClick={handleBook}
-//             disabled={!selectedTime}
-//             className="mt-10 w-full rounded-2xl bg-sky-500 px-6 py-5 text-[22px] font-semibold text-white transition hover:bg-sky-600 disabled:cursor-not-allowed disabled:bg-sky-300"
-//           >
-//             Записаться на приём
-//           </button>
-//         </div>
-//       </div>
-//     </div>
-//   )
-// }

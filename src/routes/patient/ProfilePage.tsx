@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type ChangeEvent } from 'react'
+import SecuritySettingsSection from '../../components/account/SecuritySettingsSection'
 import { useUser } from '../../context/UserContext'
 
 export default function ProfilePage() {
@@ -295,8 +296,8 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            {isEditing && (
-              <div className="mt-8 flex gap-4">
+          {isEditing && (
+            <div className="mt-8 flex gap-4">
                 <button
                   onClick={handleCancel}
                   className="rounded-2xl border border-gray-200 px-6 py-3 text-xl font-medium text-slate-900 transition hover:bg-gray-50"
@@ -312,6 +313,8 @@ export default function ProfilePage() {
               </div>
             )}
           </section>
+
+          <SecuritySettingsSection className="rounded-3xl border border-gray-200 bg-white p-8 shadow-sm" />
         </div>
       </div>
     </div>

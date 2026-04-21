@@ -1,7 +1,7 @@
 import { apiRequest } from './api'
 
 export type BackendRole = 'patient' | 'doctor' | 'superuser' | 'receptionist'
-export type AppRole = 'patient' | 'doctor' | 'admin'
+export type AppRole = 'patient' | 'doctor' | 'admin' | 'receptionist'
 
 export type AuthResponse = {
   access_token: string
@@ -10,6 +10,12 @@ export type AuthResponse = {
   expires_in: number
   must_change_password: boolean
   role: BackendRole
+}
+
+export type ForgotPasswordResponse = {
+  processed: boolean
+  temporary_password_sent: boolean
+  next_step: 'check_email_if_exists' | 'temporary_password_sent' | 'contact_administrator' | 'contact_developers'
 }
 
 export type RegisterPatientPayload = {
@@ -28,8 +34,8 @@ export type RegisterPatientPayload = {
 export function mapBackendRoleToAppRole(role: BackendRole): AppRole {
   if (role === 'doctor') return 'doctor'
   if (role === 'patient') return 'patient'
+  if (role === 'receptionist') return 'receptionist'
 
-  // superuser и receptionist пока направляем в admin UI
   return 'admin'
 }
 
@@ -37,6 +43,13 @@ export async function loginRequest(email: string, password: string) {
   return apiRequest<AuthResponse>('/api/v1/auth/login', {
     method: 'POST',
     body: { email, password },
+  })
+}
+
+export async function forgotPasswordRequest(email: string) {
+  return apiRequest<ForgotPasswordResponse>('/api/v1/auth/forgot-password', {
+    method: 'POST',
+    body: { email },
   })
 }
 

@@ -9,6 +9,9 @@ export type Specialty = {
 
 export type DoctorStaff = {
   user_id: string
+  role?: string
+  email?: string
+  phone_number?: string
   first_name: string
   last_name: string
   middle_name: string
@@ -17,6 +20,23 @@ export type DoctorStaff = {
   specialty_name: string
   work_experience_years: number
   appointment_fee: string
+  is_active?: boolean
+}
+
+export type StaffMember = {
+  user_id: string
+  role: 'doctor' | 'receptionist'
+  email: string
+  phone_number: string
+  first_name: string
+  last_name: string
+  middle_name: string
+  full_name: string
+  specialty_id: string
+  specialty_name: string
+  work_experience_years: number
+  appointment_fee: string
+  is_active: boolean
 }
 
 export type Holiday = {
@@ -67,7 +87,7 @@ export type FakeDataDeleteResponse = {
 }
 
 export type CreateStaffPayload = {
-  role: 'doctor'
+  role: 'doctor' | 'receptionist'
   email: string
   first_name: string
   last_name: string
@@ -244,6 +264,35 @@ export function listDoctors(
   )
 }
 
+export function listStaff(
+  token: string,
+  filters: {
+    search?: string
+    role?: '' | 'doctor' | 'receptionist'
+    specialtyId?: string
+  } = {},
+) {
+  const params = new URLSearchParams()
+
+  if (filters.role) {
+    params.set('role', filters.role)
+  }
+
+  if (filters.search) {
+    params.set('search', filters.search)
+  }
+
+  if (filters.specialtyId) {
+    params.set('specialty_id', filters.specialtyId)
+  }
+
+  const query = params.toString()
+  return adminRequest<StaffMember[]>(
+    `/api/v1/users/staff${query ? `?${query}` : ''}`,
+    token,
+  )
+}
+
 export function createDoctorStaff(token: string, payload: CreateStaffPayload) {
   const formData = new FormData()
 
@@ -280,6 +329,45 @@ export function createDoctorStaff(token: string, payload: CreateStaffPayload) {
   }>('/api/v1/users/staff', token, {
     method: 'POST',
     body: formData,
+  })
+}
+
+export function updateStaff(
+  token: string,
+  userID: string,
+  payload: {
+    email?: string
+    first_name?: string
+    last_name?: string
+    middle_name?: string
+    phone_number?: string
+    gender_id?: number
+    passport_number?: string
+    address?: string
+    date_of_birth?: string
+    specialty_id?: string
+    work_experience_years?: number
+    appointment_fee?: string
+    is_active?: boolean
+  },
+) {
+  return jsonRequest<StaffMember>(`/api/v1/users/staff/${userID}`, token, 'PATCH', payload)
+}
+
+export function resetStaffPassword(token: string, userID: string) {
+  return adminRequest<{
+    user_id: string
+    email: string
+    temporary_password_sent: boolean
+    must_change_password: boolean
+  }>(`/api/v1/users/staff/${userID}/forgot-password`, token, {
+    method: 'POST',
+  })
+}
+
+export function deleteStaff(token: string, userID: string) {
+  return adminRequest<void>(`/api/v1/users/staff/${userID}`, token, {
+    method: 'DELETE',
   })
 }
 

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ChangeEvent } from 'react'
+import SecuritySettingsSection from '../../components/account/SecuritySettingsSection'
 import { useUser } from '../../context/UserContext'
-import DoctorSecuritySettings from '../../components/doctor/DoctorSecuritySettings'
 
 export default function DoctorProfilePage() {
   const { user, updateUser } = useUser()
@@ -349,7 +349,7 @@ export default function DoctorProfilePage() {
           )}
         </section>
 
-        <DoctorSecuritySettings />
+        <SecuritySettingsSection />
       </div>
     </div>
   )

@@ -1,0 +1,71 @@
+import type { CreateStaffPayload, Specialty, StaffMember } from '../../lib/admin'
+
+export type CreateStaffForm = Omit<
+  CreateStaffPayload,
+  'passport_files' | 'diploma_files' | 'employment_record_files'
+> & {
+  passport_files: File[]
+  diploma_files: File[]
+  employment_record_files: File[]
+}
+
+export type EditStaffForm = {
+  user_id: string
+  role: StaffMember['role']
+  full_name: string
+  email: string
+  phone_number: string
+  specialty_id: string
+  appointment_fee: string
+  work_experience_years: string
+  is_active: boolean
+}
+
+export const initialCreateStaffForm: CreateStaffForm = {
+  role: 'doctor',
+  email: '',
+  first_name: '',
+  last_name: '',
+  middle_name: '',
+  phone_number: '',
+  gender_id: '1',
+  passport_number: '',
+  address: '',
+  date_of_birth: '',
+  specialty_id: '',
+  work_experience_years: '',
+  appointment_fee: '',
+  passport_files: [],
+  diploma_files: [],
+  employment_record_files: [],
+}
+
+export function fileNames(files: File[]) {
+  return files.map((file) => file.name).join(', ')
+}
+
+export function roleLabel(role: StaffMember['role']) {
+  return role === 'doctor' ? 'Врач' : 'Регистратура'
+}
+
+export function roleBadgeClass(role: StaffMember['role']) {
+  return role === 'doctor' ? 'bg-sky-50 text-sky-700' : 'bg-amber-50 text-amber-700'
+}
+
+export function toEditStaffForm(item: StaffMember): EditStaffForm {
+  return {
+    user_id: item.user_id,
+    role: item.role,
+    full_name: item.full_name,
+    email: item.email,
+    phone_number: item.phone_number,
+    specialty_id: item.specialty_id,
+    appointment_fee: item.appointment_fee,
+    work_experience_years: String(item.work_experience_years ?? ''),
+    is_active: item.is_active,
+  }
+}
+
+export function nextSpecialtyID(specialties: Specialty[]) {
+  return specialties.find((item) => item.is_active)?.id ?? ''
+}

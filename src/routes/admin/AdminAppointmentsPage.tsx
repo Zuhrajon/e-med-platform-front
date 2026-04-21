@@ -1,5 +1,9 @@
-import { CalendarCheck2, LoaderCircle, Trash2 } from 'lucide-react'
-import { useEffect, useState, type FormEvent } from 'react'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
+import AdminHolidayEditorCard from '../../components/admin/AdminHolidayEditorCard'
+import AdminHolidayListCard from '../../components/admin/AdminHolidayListCard'
+import AdminPageHeader from '../../components/admin/AdminPageHeader'
+import AdminStatusMessage from '../../components/admin/AdminStatusMessage'
+import { useUser } from '../../context/UserContext'
 import {
   checkWorkingDay,
   createHoliday,
@@ -9,8 +13,6 @@ import {
   type Holiday,
   type WorkingDayStatus,
 } from '../../lib/admin'
-import { useUser } from '../../context/UserContext'
-import { formatRuDate } from './admin-utils'
 
 type HolidayFormState = {
   date: string
@@ -24,6 +26,7 @@ const initialHolidayForm: HolidayFormState = {
 
 export default function AdminAppointmentsPage() {
   const { accessToken } = useUser()
+  const editorRef = useRef<HTMLDivElement | null>(null)
   const [year, setYear] = useState(String(new Date().getFullYear()))
   const [holidays, setHolidays] = useState<Holiday[]>([])
   const [form, setForm] = useState<HolidayFormState>(initialHolidayForm)
@@ -54,6 +57,15 @@ export default function AdminAppointmentsPage() {
   useEffect(() => {
     void loadHolidays()
   }, [accessToken])
+
+  useEffect(() => {
+    if (!editingHolidayID) return
+
+    editorRef.current?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start',
+    })
+  }, [editingHolidayID])
 
   async function handleHolidaySubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -111,178 +123,49 @@ export default function AdminAppointmentsPage() {
 
   return (
     <div className="w-full px-6 py-10">
-      <header>
-        <h1 className="text-[25px] font-semibold text-slate-900">Календарь клиники</h1>
-        <p className="mt-2 text-[17px] text-slate-500">
-          Управление праздничными днями и проверка рабочих дат.
-        </p>
-      </header>
+      <AdminPageHeader
+        title="Календарь клиники"
+        description="Управление праздничными днями и проверка рабочих дат."
+      />
 
       {error ? (
-        <div className="mt-6 rounded-3xl border border-red-200 bg-red-50 px-5 py-4 text-red-700">
+        <AdminStatusMessage tone="error" className="mt-6">
           {error}
-        </div>
+        </AdminStatusMessage>
       ) : null}
 
       <section className="mt-8 grid gap-6 2xl:grid-cols-[0.9fr_1.1fr]">
-        <article className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
-          <h2 className="text-[21px] font-semibold text-slate-900">
-            {editingHolidayID ? 'Редактировать праздник' : 'Добавить праздник'}
-          </h2>
-          <p className="mt-1 text-sm text-slate-500">
-            `POST/PATCH /api/v1/calendar/holidays`
-          </p>
+        <div ref={editorRef}>
+          <AdminHolidayEditorCard
+            form={form}
+            editingHolidayID={editingHolidayID}
+            isSubmitting={isSubmitting}
+            checkDate={checkDate}
+            isChecking={isChecking}
+            workingDay={workingDay}
+            onFormChange={setForm}
+            onSubmit={handleHolidaySubmit}
+            onResetEditing={() => {
+              setEditingHolidayID(null)
+              setForm(initialHolidayForm)
+            }}
+            onCheckDateChange={setCheckDate}
+            onCheckSubmit={handleCheckWorkingDay}
+          />
+        </div>
 
-          <form onSubmit={handleHolidaySubmit} className="mt-6 space-y-4">
-            <input
-              required
-              type="date"
-              value={form.date}
-              onChange={(event) => setForm((prev) => ({ ...prev, date: event.target.value }))}
-              className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-sky-500"
-            />
-            <input
-              required
-              value={form.name}
-              onChange={(event) => setForm((prev) => ({ ...prev, name: event.target.value }))}
-              placeholder="Название праздника"
-              className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-sky-500"
-            />
-
-            <div className="flex flex-wrap gap-3">
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="inline-flex items-center gap-2 rounded-2xl bg-sky-700 px-5 py-3 font-semibold text-white transition hover:bg-sky-800 disabled:cursor-not-allowed disabled:bg-slate-400"
-              >
-                {isSubmitting ? <LoaderCircle className="h-4 w-4 animate-spin" /> : null}
-                {editingHolidayID ? 'Сохранить' : 'Создать'}
-              </button>
-
-              {editingHolidayID ? (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setEditingHolidayID(null)
-                    setForm(initialHolidayForm)
-                  }}
-                  className="rounded-2xl border border-slate-200 px-5 py-3 font-semibold text-slate-700 transition hover:bg-slate-50"
-                >
-                  Отменить
-                </button>
-              ) : null}
-            </div>
-          </form>
-
-          <div className="mt-8 border-t border-slate-200 pt-6">
-            <h3 className="text-lg font-semibold text-slate-900">Проверка рабочего дня</h3>
-            <form onSubmit={handleCheckWorkingDay} className="mt-4 flex flex-wrap gap-3">
-              <input
-                type="date"
-                value={checkDate}
-                onChange={(event) => setCheckDate(event.target.value)}
-                className="rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-sky-500"
-              />
-              <button
-                type="submit"
-                disabled={!checkDate || isChecking}
-                className="inline-flex items-center gap-2 rounded-2xl bg-slate-900 px-5 py-3 font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400"
-              >
-                {isChecking ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <CalendarCheck2 className="h-4 w-4" />}
-                Проверить
-              </button>
-            </form>
-
-            {workingDay ? (
-              <div className="mt-4 rounded-2xl bg-slate-50 px-4 py-4 text-sm text-slate-700">
-                <p>
-                  <span className="font-semibold text-slate-900">Дата:</span>{' '}
-                  {formatRuDate(workingDay.date)}
-                </p>
-                <p className="mt-2">
-                  <span className="font-semibold text-slate-900">Статус:</span>{' '}
-                  {workingDay.is_working ? 'рабочий день' : 'нерабочий день'}
-                </p>
-                {workingDay.is_holiday ? (
-                  <p className="mt-2">
-                    <span className="font-semibold text-slate-900">Праздник:</span>{' '}
-                    {workingDay.holiday_name}
-                  </p>
-                ) : null}
-              </div>
-            ) : null}
-          </div>
-        </article>
-
-        <article className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-            <div>
-              <h2 className="text-[21px] font-semibold text-slate-900">Праздничные дни</h2>
-              <p className="mt-1 text-sm text-slate-500">
-                `GET /api/v1/calendar/holidays?year=...`
-              </p>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <label className="text-sm text-slate-500">Год</label>
-              <input
-                value={year}
-                onChange={(event) => setYear(event.target.value)}
-                className="w-28 rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-sky-500"
-              />
-              <button
-                type="button"
-                onClick={() => void loadHolidays(year)}
-                className="rounded-2xl bg-sky-700 px-5 py-3 font-semibold text-white transition hover:bg-sky-800"
-              >
-                Загрузить
-              </button>
-            </div>
-          </div>
-
-          <div className="mt-6 space-y-3">
-            {isLoading ? (
-              <div className="text-sm text-slate-500">Загрузка списка...</div>
-            ) : holidays.length ? (
-              holidays.map((holiday) => (
-                <div
-                  key={holiday.id}
-                  className="flex flex-col gap-4 rounded-3xl border border-slate-200 px-5 py-4 lg:flex-row lg:items-center lg:justify-between"
-                >
-                  <div>
-                    <p className="text-lg font-semibold text-slate-900">{holiday.name}</p>
-                    <p className="mt-1 text-sm text-slate-500">
-                      {formatRuDate(holiday.date)} ({holiday.date})
-                    </p>
-                  </div>
-
-                  <div className="flex flex-wrap gap-3">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setEditingHolidayID(holiday.id)
-                        setForm({ date: holiday.date, name: holiday.name })
-                      }}
-                      className="rounded-2xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
-                    >
-                      Редактировать
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => void handleDeleteHoliday(holiday.id)}
-                      className="inline-flex items-center gap-2 rounded-2xl border border-red-200 px-4 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-50"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                      Удалить
-                    </button>
-                  </div>
-                </div>
-              ))
-            ) : (
-              <div className="text-sm text-slate-500">Для выбранного года праздников нет.</div>
-            )}
-          </div>
-        </article>
+        <AdminHolidayListCard
+          year={year}
+          holidays={holidays}
+          isLoading={isLoading}
+          onYearChange={setYear}
+          onLoad={() => loadHolidays(year)}
+          onEdit={(holiday) => {
+            setEditingHolidayID(holiday.id)
+            setForm({ date: holiday.date, name: holiday.name })
+          }}
+          onDelete={handleDeleteHoliday}
+        />
       </section>
     </div>
   )

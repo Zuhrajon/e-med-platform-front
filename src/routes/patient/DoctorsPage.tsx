@@ -34,7 +34,7 @@ export default function DoctorsPage() {
         ])
 
         setSpecialties(specialtiesResponse.filter((item) => item.is_active))
-        setDoctors(doctorsResponse.map(mapDoctorFromBackend))
+        setDoctors(doctorsResponse.map(mapDoctorFromBackend).filter((item) => item.isActive))
       } catch {
         setError('Не удалось загрузить список врачей')
       } finally {
