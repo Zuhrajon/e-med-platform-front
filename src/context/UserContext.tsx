@@ -17,6 +17,8 @@ import {
   registerPatientRequest,
   type AppRole,
 } from '../lib/auth'
+import { getMyProfile, mergeUserProfileFromBackend } from '../lib/profile'
+import { saveCachedDoctorDescription } from '../lib/doctorDescription'
 
 export type Appointment = {
   id: string
@@ -31,6 +33,7 @@ export type Appointment = {
 export type UserProfile = {
   role: AppRole
   backendRole: BackendRole
+  userId?: string
   firstName: string
   lastName: string
   middleName: string
@@ -196,6 +199,35 @@ export function UserProvider({ children }: { children: ReactNode }) {
     setIsBootstrapping(false)
   }, [])
 
+  useEffect(() => {
+    if (!session?.accessToken) return
+
+    const accessToken = session.accessToken
+
+    let isMounted = true
+
+    async function syncProfile() {
+      try {
+        const profile = await getMyProfile(accessToken)
+        if (!isMounted) return
+
+        setUserState((prev) => {
+          const next = mergeUserProfileFromBackend(prev, prev.backendRole, profile)
+          persistProfile(next)
+          return next
+        })
+      } catch {
+        // Keep the locally restored profile if profile sync fails.
+      }
+    }
+
+    void syncProfile()
+
+    return () => {
+      isMounted = false
+    }
+  }, [session?.accessToken])
+
   const setUser = useCallback((data: UserProfile) => {
     setUserState(data)
     persistProfile(data)
@@ -208,6 +240,28 @@ export function UserProvider({ children }: { children: ReactNode }) {
       return next
     })
   }, [])
+
+  const syncUserProfile = useCallback(
+    (
+      backendRole: BackendRole,
+      profile: Parameters<typeof mergeUserProfileFromBackend>[2],
+      appRole?: AppRole,
+    ) => {
+      setUserState((prev) => {
+        const next = {
+          ...mergeUserProfileFromBackend(prev, backendRole, profile),
+          role: appRole ?? prev.role,
+          backendRole,
+        }
+        if (backendRole === 'doctor' && next.userId) {
+          saveCachedDoctorDescription(next.userId, next.description || '')
+        }
+        persistProfile(next)
+        return next
+      })
+    },
+    [],
+  )
 
   const applyAuthResult = useCallback(
     (
@@ -296,15 +350,22 @@ export function UserProvider({ children }: { children: ReactNode }) {
     async ({ email, password }: LoginInput) => {
       const response = await loginRequest(email, password)
       const { firstName, lastName } = deriveNameFromEmail(email)
-
-    
-      return applyAuthResult(response, {
+      const role = applyAuthResult(response, {
         email,
         firstName: user.firstName || firstName,
         lastName: user.lastName || lastName,
       })
+
+      try {
+        const profile = await getMyProfile(response.access_token)
+        syncUserProfile(response.role, profile, role)
+      } catch {
+        // Fall back to the minimal login profile.
+      }
+
+      return role
     },
-    [applyAuthResult, user.firstName, user.lastName],
+    [applyAuthResult, syncUserProfile, user],
   )
 
   const registerPatient = useCallback(
@@ -323,6 +384,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
       })
 
       applyAuthResult(response, {
+        userId: response.user_id,
         role: 'patient',
         backendRole: 'patient',
         firstName: data.firstName,
@@ -335,8 +397,15 @@ export function UserProvider({ children }: { children: ReactNode }) {
         address: data.address,
         documentNumber: data.documentNumber,
       })
+
+      try {
+        const profile = await getMyProfile(response.access_token)
+        syncUserProfile('patient', profile, 'patient')
+      } catch {
+        // Keep the registration payload if profile sync fails.
+      }
     },
-    [applyAuthResult],
+    [applyAuthResult, syncUserProfile],
   )
 
   const logout = useCallback(async () => {
@@ -370,9 +439,13 @@ export function UserProvider({ children }: { children: ReactNode }) {
     setSession(nextSession)
     persistSession(nextSession)
 
-    const mappedRole = mapBackendRoleToAppRole(response.role)
-    updateUser({ role: mappedRole, backendRole: response.role })
-  }, [session?.refreshToken, updateUser])
+    try {
+      const profile = await getMyProfile(response.access_token)
+      syncUserProfile(response.role, profile, mapBackendRoleToAppRole(response.role))
+    } catch {
+      updateUser({ role: mapBackendRoleToAppRole(response.role), backendRole: response.role })
+    }
+  }, [session?.refreshToken, syncUserProfile, updateUser])
 
   const changePassword = useCallback(
     async (oldPassword: string, newPassword: string) => {
@@ -397,9 +470,14 @@ export function UserProvider({ children }: { children: ReactNode }) {
       setSession(nextSession)
       persistSession(nextSession)
 
-      updateUser({ role: mapBackendRoleToAppRole(response.role), backendRole: response.role })
+      try {
+        const profile = await getMyProfile(response.access_token)
+        syncUserProfile(response.role, profile, mapBackendRoleToAppRole(response.role))
+      } catch {
+        updateUser({ role: mapBackendRoleToAppRole(response.role), backendRole: response.role })
+      }
     },
-    [session?.accessToken, updateUser],
+    [session?.accessToken, syncUserProfile, updateUser],
   )
 
   const value = useMemo<UserContextType>(

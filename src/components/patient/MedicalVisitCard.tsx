@@ -1,4 +1,4 @@
-import { Calendar, FileText, Download, Pill, UserRound } from 'lucide-react'
+import { Calendar, Download, FileText, Pill, UserRound } from 'lucide-react'
 
 type Prescription = {
   id: string
@@ -12,6 +12,7 @@ export type MedicalVisit = {
   specialty: string
   date: string
   diagnosis: string
+  createdAt?: string
   filesCount?: number
   prescriptionsCount?: number
   hasProtocol?: boolean
@@ -21,6 +22,12 @@ export type MedicalVisit = {
     treatment: string
     recommendations: string
     prescriptions?: Prescription[]
+    files?: Array<{
+      id: string
+      name: string
+      sizeBytes: number
+      contentType: string
+    }>
   }
 }
 
@@ -42,9 +49,7 @@ export default function MedicalVisitCard({
           </div>
 
           <div>
-            <h3 className="text-[22px] font-semibold text-slate-900">
-              {visit.doctorName}
-            </h3>
+            <h3 className="text-[22px] font-semibold text-slate-900">{visit.doctorName}</h3>
 
             <p className="mt-2 text-[18px] text-gray-500">{visit.specialty}</p>
 
@@ -52,6 +57,10 @@ export default function MedicalVisitCard({
               <Calendar size={22} />
               <span>{visit.date}</span>
             </div>
+
+            {visit.createdAt ? (
+              <p className="mt-3 text-[15px] text-gray-400">Добавлено: {visit.createdAt}</p>
+            ) : null}
           </div>
         </div>
 
@@ -63,7 +72,7 @@ export default function MedicalVisitCard({
       <div className="my-6 border-t border-gray-200" />
 
       <div className="flex flex-wrap gap-3">
-        {visit.hasProtocol && (
+        {visit.hasProtocol ? (
           <button
             onClick={() => onOpenProtocol(visit)}
             className="inline-flex items-center gap-3 rounded-xl border border-gray-300 bg-white px-5 py-3 text-[16px] font-semibold text-slate-900 transition hover:bg-gray-50"
@@ -71,21 +80,24 @@ export default function MedicalVisitCard({
             <FileText size={22} />
             Протокол
           </button>
-        )}
+        ) : null}
 
-        {visit.filesCount && visit.filesCount > 0 && (
-          <button className="inline-flex items-center gap-3 rounded-xl border border-gray-300 bg-white px-5 py-3 text-[16px] font-semibold text-slate-900 transition hover:bg-gray-50">
+        {visit.filesCount && visit.filesCount > 0 ? (
+          <button
+            onClick={() => onOpenProtocol(visit)}
+            className="inline-flex items-center gap-3 rounded-xl border border-gray-300 bg-white px-5 py-3 text-[16px] font-semibold text-slate-900 transition hover:bg-gray-50"
+          >
             <Download size={22} />
             Файлы ({visit.filesCount})
           </button>
-        )}
+        ) : null}
 
-        {visit.prescriptionsCount && visit.prescriptionsCount > 0 && (
+        {visit.prescriptionsCount && visit.prescriptionsCount > 0 ? (
           <button className="inline-flex items-center gap-3 rounded-xl border border-gray-300 bg-white px-5 py-3 text-[16px] font-semibold text-slate-900 transition hover:bg-gray-50">
             <Pill size={22} />
             Рецепты ({visit.prescriptionsCount})
           </button>
-        )}
+        ) : null}
       </div>
     </div>
   )

@@ -17,7 +17,6 @@ import ProfilePage from './routes/patient/ProfilePage'
 
 import DoctorHomePage from './routes/doctor/DoctorHomePage'
 import DoctorAppointmentsPage from './routes/doctor/DoctorAppointmentsPage'
-import DoctorPatientsPage from './routes/doctor/DoctorPatientsPage'
 import DoctorSchedulePage from './routes/doctor/DoctorSchedulePage'
 import DoctorProfilePage from './routes/doctor/DoctorProfilePage'
 
@@ -28,6 +27,7 @@ import AdminProfilePage from './routes/admin/AdminProfilePage'
 import AdminUsersPage from './routes/admin/AdminUsersPage'
 import ReceptionProfilePage from './routes/reception/ReceptionProfilePage'
 import ReceptionVisitsPage from './routes/reception/ReceptionVisitsPage'
+import StaffPatientsPage from './routes/shared/StaffPatientsPage'
 
 function RequireAuth({ roles }: { roles: Array<'patient' | 'doctor' | 'admin' | 'receptionist'> }) {
   const { isAuthenticated, isBootstrapping, user } = useUser()
@@ -94,7 +94,6 @@ export default function App() {
         <Route path="/doctor" element={<Layout />}>
           <Route index element={<DoctorHomePage />} />
           <Route path="appointments" element={<DoctorAppointmentsPage />} />
-          <Route path="patients" element={<DoctorPatientsPage />} />
           <Route path="schedule" element={<DoctorSchedulePage />} />
           <Route path="profile" element={<DoctorProfilePage />} />
         </Route>
@@ -114,7 +113,7 @@ export default function App() {
         <Route path="/reception" element={<Layout />}>
           <Route index element={<ReceptionVisitsPage />} />
           <Route path="visits" element={<ReceptionVisitsPage />} />
-          <Route path="patients" element={<DoctorPatientsPage />} />
+          <Route path="patients" element={<StaffPatientsPage roleLabel="receptionist" />} />
           <Route path="profile" element={<ReceptionProfilePage />} />
         </Route>
       </Route>

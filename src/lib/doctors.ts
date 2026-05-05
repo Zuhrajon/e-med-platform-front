@@ -1,4 +1,5 @@
 import { apiRequest } from './api'
+import { getCachedDoctorDescription } from './doctorDescription'
 
 export type BackendSpecialty = {
   id: string
@@ -37,14 +38,20 @@ export type DoctorListItem = {
 }
 
 export function mapDoctorFromBackend(item: BackendDoctor): DoctorListItem {
+  const cachedDescription = getCachedDoctorDescription(item.user_id)
+
   return {
     id: item.user_id,
-    name: item.full_name || [item.last_name, item.first_name, item.middle_name].filter(Boolean).join(' '),
+    name:
+      item.full_name ||
+      [item.last_name, item.first_name, item.middle_name].filter(Boolean).join(' '),
     specialty: item.specialty_name,
     rating: 4.8,
     reviewsCount: 0,
     experience: `${item.work_experience_years} лет`,
-    description: `Специализация: ${item.specialty_name}. Контактный телефон: ${item.phone_number || 'не указан'}.`,
+    description:
+      cachedDescription ||
+      `Специализация: ${item.specialty_name}. Контактный телефон: ${item.phone_number || 'не указан'}.`,
     price: Number(item.appointment_fee),
     email: item.email,
     phone: item.phone_number,

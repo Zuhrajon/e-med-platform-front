@@ -74,9 +74,6 @@ export default function AdminStaffFormCard({
       <h2 className="text-[21px] font-semibold text-slate-900">
         {editForm ? 'Редактировать сотрудника' : 'Добавить сотрудника'}
       </h2>
-      <p className="mt-1 text-sm text-slate-500">
-        {editForm ? '`PATCH /api/v1/users/staff/{userID}`' : '`POST /api/v1/users/staff`'}
-      </p>
 
       {editForm ? (
         <form onSubmit={onEditSubmit} className="mt-6 space-y-4">

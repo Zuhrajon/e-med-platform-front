@@ -22,7 +22,7 @@ export function formatCurrency(value: string) {
 
   return new Intl.NumberFormat('ru-RU', {
     style: 'currency',
-    currency: 'RUB',
+    currency: 'TJS',
     maximumFractionDigits: 2,
   }).format(amount)
 }

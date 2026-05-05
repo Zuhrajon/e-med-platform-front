@@ -1,71 +1,94 @@
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import MedicalVisitCard, { type MedicalVisit } from '../../components/patient/MedicalVisitCard'
 import ProtocolModal from '../../components/patient/ProtocolModal'
+import { useUser } from '../../context/UserContext'
+import {
+  listMedicalCardRecords,
+  parseProtocolText,
+  type MedicalCardRecord,
+} from '../../lib/medicalCard'
+import { formatVisitDateTime, listVisits, type Visit } from '../../lib/visits'
 
 export default function MedicalBookPage() {
+  const { accessToken, user } = useUser()
   const [selectedVisit, setSelectedVisit] = useState<MedicalVisit | null>(null)
+  const [visits, setVisits] = useState<Visit[]>([])
+  const [records, setRecords] = useState<MedicalCardRecord[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState('')
 
-  const visits: MedicalVisit[] = [
-    {
-      id: '1',
-      doctorName: 'Елена Сидорова',
-      specialty: 'Невролог',
-      date: '28.03.2026',
-      diagnosis: 'Мигрень',
-      hasProtocol: true,
-      prescriptionsCount: 1,
-      protocol: {
-        complaints:
-          'Периодические головные боли в височной области, усиливающиеся к вечеру.\nПовышенная утомляемость.',
-        diagnosis: 'Мигрень',
-        treatment:
-          'Назначены обезболивающие препараты, рекомендован режим отдыха.\nПроведена консультация по профилактике головных болей.',
-        recommendations:
-          'Соблюдать режим сна, избегать стрессовых ситуаций. Повторный приём через 2 недели. При усилении симптомов обратиться незамедлительно.',
-        prescriptions: [
-          {
-            id: '1',
-            name: 'Ибупрофен 400мг',
-            dosage: 'По 1 таблетке 2-3 раза в день после еды. Курс 5-7 дней.',
+  useEffect(() => {
+    if (!accessToken) return
+
+    const loadMedicalBook = async () => {
+      setIsLoading(true)
+      setError('')
+
+      try {
+        const visitsResponse = await listVisits(accessToken)
+        setVisits(visitsResponse)
+
+        const patientUserID = user.userId || visitsResponse[0]?.patient_user_id
+        if (!patientUserID) {
+          setRecords([])
+          return
+        }
+
+        const recordsResponse = await listMedicalCardRecords(accessToken, patientUserID)
+        setRecords(recordsResponse)
+      } catch (loadError) {
+        setError(
+          loadError instanceof Error
+            ? loadError.message
+            : 'Не удалось загрузить медицинскую книжку',
+        )
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    void loadMedicalBook()
+  }, [accessToken, user.userId])
+
+  const visitMap = useMemo(
+    () => new Map(visits.map((visit) => [visit.visit_id, visit])),
+    [visits],
+  )
+
+  const medicalVisits = useMemo<MedicalVisit[]>(
+    () =>
+      records.map((record) => {
+        const visit = visitMap.get(record.visit_id)
+        const protocol = parseProtocolText(record.protocol_text)
+
+        return {
+          id: record.record_id,
+          doctorName: record.doctor_full_name,
+          specialty: visit?.specialty_name ?? 'Специальность не указана',
+          date: formatVisitDateTime(visit?.scheduled_at ?? record.created_at),
+          createdAt: formatVisitDateTime(record.created_at),
+          diagnosis: protocol.diagnosis || 'Без диагноза',
+          hasProtocol: true,
+          filesCount: record.files.length,
+          protocol: {
+            ...protocol,
+            files: record.files.map((file) => ({
+              id: file.file_id,
+              name: file.file_name,
+              sizeBytes: file.size_bytes,
+              contentType: file.content_type,
+            })),
           },
-        ],
-      },
-    },
-    {
-      id: '2',
-      doctorName: 'Анна Иванова',
-      specialty: 'Терапевт',
-      date: '15.02.2026',
-      diagnosis: 'ОРВИ',
-      hasProtocol: true,
-      filesCount: 2,
-      prescriptionsCount: 1,
-      protocol: {
-        complaints:
-          'Повышенная температура, слабость, боль в горле, насморк.',
-        diagnosis: 'ОРВИ',
-        treatment:
-          'Назначено симптоматическое лечение, обильное питьё и постельный режим.',
-        recommendations:
-          'Избегать переохлаждения, соблюдать режим отдыха, повторно обратиться при ухудшении состояния.',
-        prescriptions: [
-          {
-            id: '2',
-            name: 'Парацетамол 500мг',
-            dosage: 'По 1 таблетке при температуре выше 38°C, не более 4 раз в сутки.',
-          },
-        ],
-      },
-    },
-  ]
+        }
+      }),
+    [records, visitMap],
+  )
 
   return (
     <div className="min-h-screen bg-[#f7f7f8] px-6 py-10">
       <div className="mx-auto max-w-6xl">
         <header>
-          <h1 className="text-[32px] font-semibold text-slate-900">
-            Медицинская книжка
-          </h1>
+          <h1 className="text-[32px] font-semibold text-slate-900">Медицинская книжка</h1>
 
           <p className="mt-4 text-[18px] text-gray-500">
             История ваших визитов и медицинские документы
@@ -73,26 +96,35 @@ export default function MedicalBookPage() {
         </header>
 
         <section className="mt-12 rounded-2xl border border-gray-200 bg-white p-10 shadow-sm">
-          <h2 className="text-[28px] font-semibold text-slate-900">
-            История визитов
-          </h2>
+          <h2 className="text-[28px] font-semibold text-slate-900">История визитов</h2>
 
           <div className="mt-10 flex flex-col gap-6">
-            {visits.map((visit) => (
-              <MedicalVisitCard
-                key={visit.id}
-                visit={visit}
-                onOpenProtocol={setSelectedVisit}
-              />
-            ))}
+            {isLoading ? (
+              <div className="rounded-2xl border border-dashed border-gray-300 px-6 py-10 text-center text-[18px] text-gray-500">
+                Загрузка медицинской книжки...
+              </div>
+            ) : error ? (
+              <div className="rounded-2xl border border-red-200 bg-red-50 px-6 py-5 text-[16px] text-red-700">
+                {error}
+              </div>
+            ) : medicalVisits.length ? (
+              medicalVisits.map((visit) => (
+                <MedicalVisitCard
+                  key={visit.id}
+                  visit={visit}
+                  onOpenProtocol={setSelectedVisit}
+                />
+              ))
+            ) : (
+              <div className="rounded-2xl border border-dashed border-gray-300 px-6 py-10 text-center text-[18px] text-gray-500">
+                Записей в медицинской книжке пока нет.
+              </div>
+            )}
           </div>
         </section>
       </div>
 
-      <ProtocolModal
-        visit={selectedVisit}
-        onClose={() => setSelectedVisit(null)}
-      />
+      <ProtocolModal visit={selectedVisit} onClose={() => setSelectedVisit(null)} />
     </div>
   )
 }

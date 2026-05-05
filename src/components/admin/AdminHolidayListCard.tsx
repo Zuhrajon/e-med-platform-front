@@ -27,7 +27,6 @@ export default function AdminHolidayListCard({
       <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div>
           <h2 className="text-[21px] font-semibold text-slate-900">Праздничные дни</h2>
-          <p className="mt-1 text-sm text-slate-500">`GET /api/v1/calendar/holidays?year=...`</p>
         </div>
 
         <div className="flex items-center gap-3">

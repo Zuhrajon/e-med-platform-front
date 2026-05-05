@@ -17,7 +17,6 @@ export default function AdminUpcomingHolidaysCard({
       <div className="flex items-center justify-between gap-4">
         <div>
           <h2 className="text-[21px] font-semibold text-slate-900">Ближайшие праздничные дни</h2>
-          <p className="mt-1 text-sm text-slate-500">Источник: `GET /api/v1/calendar/holidays`</p>
         </div>
 
         <Link

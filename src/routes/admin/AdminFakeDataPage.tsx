@@ -89,7 +89,7 @@ export default function AdminFakeDataPage() {
     <div className="w-full px-6 py-10">
       <AdminPageHeader
         title="Тестовые данные"
-        description="Управление fake-data из бекенда для быстрого наполнения демо-среды."
+        description="Быстрое наполнение и очистка демонстрационной среды."
       />
 
       {error ? (
@@ -109,9 +109,6 @@ export default function AdminFakeDataPage() {
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div>
               <h2 className="text-[21px] font-semibold text-slate-900">Управление набором данных</h2>
-              <p className="mt-1 text-sm text-slate-500">
-                `GET /api/v1/fake-data`, `POST /api/v1/fake-data/populate`, `DELETE /api/v1/fake-data`
-              </p>
             </div>
 
             <div className="flex flex-wrap gap-3">

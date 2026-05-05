@@ -1,4 +1,4 @@
-import { Pencil, RefreshCcw, Trash2 } from 'lucide-react'
+import { Ban, CheckCircle2, Pencil, RefreshCcw, Trash2 } from 'lucide-react'
 import type { FormEvent } from 'react'
 import type { StaffMember } from '../../lib/admin'
 import { formatCurrency } from '../../routes/admin/admin-utils'
@@ -15,6 +15,7 @@ type AdminStaffListCardProps = {
   onSearchChange: (value: string) => void
   onRoleFilterChange: (value: '' | 'doctor' | 'receptionist') => void
   onEdit: (item: StaffMember) => void
+  onToggleStatus: (item: StaffMember) => void | Promise<void>
   onResetPassword: (item: StaffMember) => void | Promise<void>
   onDelete: (item: StaffMember) => void | Promise<void>
 }
@@ -29,6 +30,7 @@ export default function AdminStaffListCard({
   onSearchChange,
   onRoleFilterChange,
   onEdit,
+  onToggleStatus,
   onResetPassword,
   onDelete,
 }: AdminStaffListCardProps) {
@@ -37,7 +39,6 @@ export default function AdminStaffListCard({
       <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div>
           <h2 className="text-[21px] font-semibold text-slate-900">Список сотрудников</h2>
-          <p className="mt-1 text-sm text-slate-500">`GET /api/v1/users/staff`</p>
         </div>
 
         <form onSubmit={onSearchSubmit} className="grid gap-3 md:grid-cols-[1fr_170px_auto]">
@@ -113,6 +114,15 @@ export default function AdminStaffListCard({
                   >
                     <Pencil className="h-4 w-4" />
                     Редактировать
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => void onToggleStatus(item)}
+                    disabled={pending}
+                    className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-70"
+                  >
+                    {item.is_active ? <Ban className="h-4 w-4" /> : <CheckCircle2 className="h-4 w-4" />}
+                    {item.is_active ? 'Деактивировать' : 'Активировать'}
                   </button>
                   <button
                     type="button"

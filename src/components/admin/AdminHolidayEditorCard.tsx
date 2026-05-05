@@ -41,7 +41,6 @@ export default function AdminHolidayEditorCard({
       <h2 className="text-[21px] font-semibold text-slate-900">
         {editingHolidayID ? 'Редактировать праздник' : 'Добавить праздник'}
       </h2>
-      <p className="mt-1 text-sm text-slate-500">`POST/PATCH /api/v1/calendar/holidays`</p>
 
       <form onSubmit={onSubmit} className="mt-6 space-y-4">
         <input
@@ -107,8 +106,7 @@ export default function AdminHolidayEditorCard({
         {workingDay ? (
           <div className="mt-4 rounded-2xl bg-slate-50 px-4 py-4 text-sm text-slate-700">
             <p>
-              <span className="font-semibold text-slate-900">Дата:</span>{' '}
-              {formatRuDate(workingDay.date)}
+              <span className="font-semibold text-slate-900">Дата:</span> {formatRuDate(workingDay.date)}
             </p>
             <p className="mt-2">
               <span className="font-semibold text-slate-900">Статус:</span>{' '}
@@ -116,8 +114,7 @@ export default function AdminHolidayEditorCard({
             </p>
             {workingDay.is_holiday ? (
               <p className="mt-2">
-                <span className="font-semibold text-slate-900">Праздник:</span>{' '}
-                {workingDay.holiday_name}
+                <span className="font-semibold text-slate-900">Праздник:</span> {workingDay.holiday_name}
               </p>
             ) : null}
           </div>

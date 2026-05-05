@@ -16,6 +16,8 @@ export type Visit = {
   created_at: string
 }
 
+export type VisitDetails = Visit
+
 export type AvailableSlot = {
   start_at: string
   end_at: string
@@ -82,6 +84,13 @@ export function createVisit(accessToken: string, payload: { doctor_user_id: stri
     method: 'POST',
     token: accessToken,
     body: payload,
+  })
+}
+
+export function getVisitByID(accessToken: string, visitID: string) {
+  return apiRequest<VisitDetails>(`/api/v1/visits/${visitID}`, {
+    method: 'GET',
+    token: accessToken,
   })
 }
 

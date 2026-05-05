@@ -2,12 +2,8 @@ import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useUser } from '../../context/UserContext'
 import { getDoctors, mapDoctorFromBackend, type DoctorListItem } from '../../lib/doctors'
-import {
-  createVisit,
-  getAvailableSlots,
-  toDateInputValue,
-  type AvailableSlot,
-} from '../../lib/visits'
+import { createVisit, getAvailableSlots, toDateInputValue, type AvailableSlot } from '../../lib/visits'
+import { formatCurrency } from '../admin/admin-utils'
 
 function getNextWorkdays(daysCount: number) {
   const dates: string[] = []
@@ -160,10 +156,7 @@ export default function DoctorDetailsPage() {
 
   return (
     <div className="py-6">
-      <button
-        onClick={() => navigate('/app/doctors')}
-        className="mb-8 text-[18px] font-medium text-slate-900"
-      >
+      <button onClick={() => navigate('/app/doctors')} className="mb-8 text-[18px] font-medium text-slate-900">
         ← Назад к врачам
       </button>
 
@@ -189,7 +182,9 @@ export default function DoctorDetailsPage() {
           <h2 className="text-2xl font-semibold text-slate-900">Запись на приём</h2>
           <div className="mt-4 rounded-2xl bg-slate-50 p-4">
             <p className="text-sm text-slate-500">Стоимость приёма</p>
-            <p className="mt-2 text-2xl font-semibold text-slate-900">{currentDoctor.price} ₽</p>
+            <p className="mt-2 text-2xl font-semibold text-slate-900">
+              {formatCurrency(String(currentDoctor.price))}
+            </p>
           </div>
 
           <div className="mt-8">

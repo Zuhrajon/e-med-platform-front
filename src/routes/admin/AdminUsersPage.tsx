@@ -12,16 +12,18 @@ import {
   type EditStaffForm,
 } from '../../components/admin/AdminUsers.shared'
 import { useUser } from '../../context/UserContext'
-import {     
+import {
   createDoctorStaff,
   createSpecialty,
   deleteSpecialty,
   deleteStaff,
+  getStaffByID,
   listSpecialties,
   listStaff,
   resetStaffPassword,
   updateSpecialty,
   updateStaff,
+  updateStaffStatus,
   type CreateStaffPayload,
   type Specialty,
   type StaffMember,
@@ -101,6 +103,22 @@ export default function AdminUsersPage() {
     setEditForm((prev) => (prev ? { ...prev, [key]: value } : prev))
   }
 
+  async function onEdit(item: StaffMember) {
+    if (!accessToken) return
+
+    setPendingActionId(item.user_id)
+    setError(null)
+
+    try {
+      const response = await getStaffByID(accessToken, item.user_id)
+      setEditForm(toEditStaffForm(response))
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Не удалось загрузить сотрудника')
+    } finally {
+      setPendingActionId(null)
+    }
+  }
+
   function onFiles(
     key: 'passport_files' | 'diploma_files' | 'employment_record_files',
     event: ChangeEvent<HTMLInputElement>,
@@ -131,7 +149,7 @@ export default function AdminUsersPage() {
       setSuccess(
         response.temporary_password_sent
           ? 'Сотрудник создан. Временный пароль отправлен на email.'
-          : 'Сотрудник создан, но отправка временного пароля не подтверждена бекендом.',
+          : 'Сотрудник создан, но отправка временного пароля не подтверждена.',
       )
       setCreateForm({ ...initialCreateStaffForm, specialty_id: nextSpecialtyID(activeSpecialties) })
       await loadData(search, roleFilter)
@@ -191,6 +209,27 @@ export default function AdminUsersPage() {
       setSuccess(`Одноразовый пароль отправлен на ${item.email}.`)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Не удалось сбросить пароль')
+    } finally {
+      setPendingActionId(null)
+    }
+  }
+
+  async function onToggleStatus(item: StaffMember) {
+    if (!accessToken) return
+
+    setPendingActionId(item.user_id)
+    setError(null)
+    setSuccess(null)
+
+    try {
+      await updateStaffStatus(accessToken, item.user_id, !item.is_active)
+      setSuccess(item.is_active ? 'Сотрудник деактивирован.' : 'Сотрудник активирован.')
+      if (editForm?.user_id === item.user_id) {
+        setEditForm((prev) => (prev ? { ...prev, is_active: !item.is_active } : prev))
+      }
+      await loadData(search, roleFilter)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Не удалось изменить статус сотрудника')
     } finally {
       setPendingActionId(null)
     }
@@ -267,7 +306,7 @@ export default function AdminUsersPage() {
     <div className="w-full px-6 py-10">
       <AdminPageHeader
         title="Сотрудники"
-        description="Поиск по сотрудникам, ручной сброс пароля и обновление оплаты труда через admin API."
+        description="Поиск по сотрудникам, ручной сброс пароля и обновление оплаты труда."
       />
 
       {error ? (
@@ -292,7 +331,8 @@ export default function AdminUsersPage() {
             onSearchSubmit={onSearch}
             onSearchChange={setSearch}
             onRoleFilterChange={setRoleFilter}
-            onEdit={(item) => setEditForm(toEditStaffForm(item))}
+            onEdit={onEdit}
+            onToggleStatus={onToggleStatus}
             onResetPassword={onResetPassword}
             onDelete={onDelete}
           />

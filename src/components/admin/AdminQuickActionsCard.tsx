@@ -46,7 +46,7 @@ export default function AdminQuickActionsCard({
         >
           <p className="font-medium text-slate-900">Тестовые данные</p>
           <p className="mt-1 text-sm text-slate-500">
-            Заполнение и очистка demo-набора через backend-ручки.
+            Быстрое заполнение и очистка демонстрационного набора данных.
           </p>
         </Link>
 

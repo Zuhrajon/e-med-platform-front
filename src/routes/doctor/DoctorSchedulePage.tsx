@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from 'react'
-import AppointmentSettingsSection from '../../components/doctor/AppointmentSettingsSection'
 import ExceptionsSection from '../../components/doctor/ExceptionsSection'
 import ScheduleInfo from '../../components/doctor/ScheduleInfo'
 import WorkingHoursSection from '../../components/doctor/WorkingHoursSection'
@@ -8,7 +7,7 @@ import { useUser } from '../../context/UserContext'
 import { listHolidays } from '../../lib/admin'
 
 export default function DoctorSchedulePage() {
-  const { schedule, saveSettings } = useDoctorSchedule()
+  const { schedule } = useDoctorSchedule()
   const { accessToken } = useUser()
   const [holidayExceptions, setHolidayExceptions] = useState<
     Array<{ id: string; date: string; reason: string }>
@@ -57,8 +56,8 @@ export default function DoctorSchedulePage() {
       <header>
         <h1 className="text-[25px] font-semibold text-slate-900">Расписание</h1>
         <p className="mt-2 text-[17px] text-gray-500">
-          Рабочие часы и исключения задаются администратором. Врач может только
-          просматривать текущее расписание и свои настройки приёма.
+          Рабочие часы и исключения задаются администратором. Врач может только просматривать
+          текущее расписание.
         </p>
       </header>
 
@@ -66,11 +65,6 @@ export default function DoctorSchedulePage() {
         <WorkingHoursSection workingDays={schedule.workingDays} />
 
         <ExceptionsSection exceptions={exceptions} />
-
-        <AppointmentSettingsSection
-          settings={schedule.settings}
-          onSave={saveSettings}
-        />
 
         <ScheduleInfo />
       </div>

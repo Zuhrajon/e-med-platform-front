@@ -354,6 +354,16 @@ export function updateStaff(
   return jsonRequest<StaffMember>(`/api/v1/users/staff/${userID}`, token, 'PATCH', payload)
 }
 
+export function getStaffByID(token: string, userID: string) {
+  return adminRequest<StaffMember>(`/api/v1/users/staff/${userID}`, token)
+}
+
+export function updateStaffStatus(token: string, userID: string, isActive: boolean) {
+  return jsonRequest<StaffMember>(`/api/v1/users/staff/${userID}/status`, token, 'PATCH', {
+    is_active: isActive,
+  })
+}
+
 export function resetStaffPassword(token: string, userID: string) {
   return adminRequest<{
     user_id: string
