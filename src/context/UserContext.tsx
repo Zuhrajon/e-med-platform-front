@@ -271,7 +271,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
         token_type: string
         expires_in: number
         must_change_password: boolean
-        role: 'patient' | 'doctor' | 'superuser' | 'receptionist'
+        role: 'patient' | 'doctor' | 'superuser' | 'receptionist' | 'laborant'
       },
       baseProfile: Partial<UserProfile>,
     ) => {

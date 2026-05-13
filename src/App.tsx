@@ -24,12 +24,19 @@ import AdminHomePage from './routes/admin/AdminHomePage'
 import AdminAppointmentsPage from './routes/admin/AdminAppointmentsPage'
 import AdminFakeDataPage from './routes/admin/AdminFakeDataPage'
 import AdminProfilePage from './routes/admin/AdminProfilePage'
+import AdminLaboratoryPage from './routes/admin/AdminLaboratoryPage'
 import AdminUsersPage from './routes/admin/AdminUsersPage'
+import LaboratoryOrdersPage from './routes/laboratory/LaboratoryOrdersPage'
+import LaboratoryProfilePage from './routes/laboratory/LaboratoryProfilePage'
 import ReceptionProfilePage from './routes/reception/ReceptionProfilePage'
 import ReceptionVisitsPage from './routes/reception/ReceptionVisitsPage'
 import StaffPatientsPage from './routes/shared/StaffPatientsPage'
 
-function RequireAuth({ roles }: { roles: Array<'patient' | 'doctor' | 'admin' | 'receptionist'> }) {
+function RequireAuth({
+  roles,
+}: {
+  roles: Array<'patient' | 'doctor' | 'admin' | 'receptionist' | 'laboratory'>
+}) {
   const { isAuthenticated, isBootstrapping, user } = useUser()
 
   if (isBootstrapping) {
@@ -44,6 +51,7 @@ function RequireAuth({ roles }: { roles: Array<'patient' | 'doctor' | 'admin' | 
     if (user.role === 'doctor') return <Navigate to="/doctor" replace />
     if (user.role === 'admin') return <Navigate to="/admin" replace />
     if (user.role === 'receptionist') return <Navigate to="/reception" replace />
+    if (user.role === 'laboratory') return <Navigate to="/laboratory" replace />
     return <Navigate to="/app" replace />
   }
 
@@ -67,6 +75,10 @@ function DefaultRedirect() {
 
   if (user.role === 'receptionist') {
     return <Navigate to="/reception" replace />
+  }
+
+  if (user.role === 'laboratory') {
+    return <Navigate to="/laboratory" replace />
   }
 
   return <Navigate to="/app" replace />
@@ -104,6 +116,7 @@ export default function App() {
           <Route index element={<AdminHomePage />} />
           <Route path="appointments" element={<AdminAppointmentsPage />} />
           <Route path="fake-data" element={<AdminFakeDataPage />} />
+          <Route path="laboratory" element={<AdminLaboratoryPage />} />
           <Route path="profile" element={<AdminProfilePage />} />
           <Route path="users" element={<AdminUsersPage />} />
         </Route>
@@ -115,6 +128,14 @@ export default function App() {
           <Route path="visits" element={<ReceptionVisitsPage />} />
           <Route path="patients" element={<StaffPatientsPage roleLabel="receptionist" />} />
           <Route path="profile" element={<ReceptionProfilePage />} />
+        </Route>
+      </Route>
+
+      <Route element={<RequireAuth roles={['laboratory']} />}>
+        <Route path="/laboratory" element={<Layout />}>
+          <Route index element={<LaboratoryOrdersPage />} />
+          <Route path="orders" element={<LaboratoryOrdersPage />} />
+          <Route path="profile" element={<LaboratoryProfilePage />} />
         </Route>
       </Route>
 

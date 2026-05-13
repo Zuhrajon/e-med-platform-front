@@ -1,7 +1,7 @@
 import { apiRequest } from './api'
 
-export type BackendRole = 'patient' | 'doctor' | 'superuser' | 'receptionist'
-export type AppRole = 'patient' | 'doctor' | 'admin' | 'receptionist'
+export type BackendRole = 'patient' | 'doctor' | 'superuser' | 'receptionist' | 'laborant'
+export type AppRole = 'patient' | 'doctor' | 'admin' | 'receptionist' | 'laboratory'
 
 export type AuthResponse = {
   access_token: string
@@ -35,6 +35,7 @@ export function mapBackendRoleToAppRole(role: BackendRole): AppRole {
   if (role === 'doctor') return 'doctor'
   if (role === 'patient') return 'patient'
   if (role === 'receptionist') return 'receptionist'
+  if (role === 'laborant') return 'laboratory'
 
   return 'admin'
 }

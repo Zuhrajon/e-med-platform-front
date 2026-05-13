@@ -68,6 +68,8 @@ export default function LoginPage() {
 
       if (role === 'doctor') {
         navigate('/doctor')
+      } else if (role === 'laboratory') {
+        navigate('/laboratory')
       } else if (role === 'receptionist') {
         navigate('/reception')
       } else if (role === 'admin') {

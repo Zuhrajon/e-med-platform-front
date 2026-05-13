@@ -4,6 +4,7 @@ import Navigation from './navigation/Navigation'
 import DoctorNavigation from './navigation/DoctorNavigation'
 import AdminNavigation from './navigation/AdminNavigation'
 import ReceptionNavigation from './navigation/ReceptionNavigation'
+import LaboratoryNavigation from './navigation/LaboratoryNavigation'
 
 export default function Layout() {
   const { user } = useUser()
@@ -16,6 +17,8 @@ export default function Layout() {
         return <AdminNavigation />
       case 'receptionist':
         return <ReceptionNavigation />
+      case 'laboratory':
+        return <LaboratoryNavigation />
       case 'patient':
       default:
         return <Navigation />

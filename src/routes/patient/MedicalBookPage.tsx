@@ -1,7 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
+import PatientLaboratoryOrdersSection from '../../components/laboratory/PatientLaboratoryOrdersSection'
 import MedicalVisitCard, { type MedicalVisit } from '../../components/patient/MedicalVisitCard'
 import ProtocolModal from '../../components/patient/ProtocolModal'
 import { useUser } from '../../context/UserContext'
+import { downloadFile } from '../../lib/files'
+import { listLaboratoryOrders, type LaboratoryOrder } from '../../lib/laboratory'
 import {
   listMedicalCardRecords,
   parseProtocolText,
@@ -14,6 +17,7 @@ export default function MedicalBookPage() {
   const [selectedVisit, setSelectedVisit] = useState<MedicalVisit | null>(null)
   const [visits, setVisits] = useState<Visit[]>([])
   const [records, setRecords] = useState<MedicalCardRecord[]>([])
+  const [labOrders, setLabOrders] = useState<LaboratoryOrder[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
 
@@ -35,7 +39,9 @@ export default function MedicalBookPage() {
         }
 
         const recordsResponse = await listMedicalCardRecords(accessToken, patientUserID)
+        const labOrdersResponse = await listLaboratoryOrders(accessToken)
         setRecords(recordsResponse)
+        setLabOrders(labOrdersResponse.filter((item) => item.status === 'completed'))
       } catch (loadError) {
         setError(
           loadError instanceof Error
@@ -122,6 +128,15 @@ export default function MedicalBookPage() {
             )}
           </div>
         </section>
+
+        <PatientLaboratoryOrdersSection
+          orders={labOrders}
+          isLoading={isLoading}
+          onDownloadFile={async (fileID, fileName) => {
+            if (!accessToken) return
+            await downloadFile(accessToken, fileID, fileName)
+          }}
+        />
       </div>
 
       <ProtocolModal visit={selectedVisit} onClose={() => setSelectedVisit(null)} />

@@ -9,11 +9,11 @@ type AdminStaffListCardProps = {
   staff: StaffMember[]
   isLoading: boolean
   search: string
-  roleFilter: '' | 'doctor' | 'receptionist'
+  roleFilter: '' | 'doctor' | 'receptionist' | 'laborant'
   pendingActionId: string | null
   onSearchSubmit: (event: FormEvent<HTMLFormElement>) => void | Promise<void>
   onSearchChange: (value: string) => void
-  onRoleFilterChange: (value: '' | 'doctor' | 'receptionist') => void
+  onRoleFilterChange: (value: '' | 'doctor' | 'receptionist' | 'laborant') => void
   onEdit: (item: StaffMember) => void
   onToggleStatus: (item: StaffMember) => void | Promise<void>
   onResetPassword: (item: StaffMember) => void | Promise<void>
@@ -51,13 +51,14 @@ export default function AdminStaffListCard({
           <select
             value={roleFilter}
             onChange={(event) =>
-              onRoleFilterChange(event.target.value as '' | 'doctor' | 'receptionist')
+              onRoleFilterChange(event.target.value as '' | 'doctor' | 'receptionist' | 'laborant')
             }
             className="rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-sky-500"
           >
             <option value="">Все роли</option>
             <option value="doctor">Врачи</option>
             <option value="receptionist">Регистратура</option>
+            <option value="laborant">Лаборатория</option>
           </select>
           <button
             type="submit"
@@ -88,7 +89,9 @@ export default function AdminStaffListCard({
                     {roleLabel(item.role)}
                   </span>
                   <span
-                    className={`rounded-full px-3 py-1 text-xs font-semibold ${item.is_active ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-600'}`}
+                    className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                      item.is_active ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-600'
+                    }`}
                   >
                     {item.is_active ? 'Активен' : 'Неактивен'}
                   </span>
@@ -98,12 +101,7 @@ export default function AdminStaffListCard({
                   <p>Email: {item.email}</p>
                   <p>Телефон: {item.phone_number || '—'}</p>
                   <p>Специальность: {item.specialty_name || 'Не назначена'}</p>
-                  <p>
-                    Оплата:{' '}
-                    {item.role === 'doctor'
-                      ? formatCurrency(item.appointment_fee)
-                      : 'Не применяется'}
-                  </p>
+                  <p>Оплата: {item.role === 'doctor' ? formatCurrency(item.appointment_fee) : 'Не применяется'}</p>
                 </div>
 
                 <div className="flex flex-wrap gap-3">

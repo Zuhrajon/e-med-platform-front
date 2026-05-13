@@ -1,6 +1,6 @@
+import type { UserProfile } from '../context/UserContext'
 import { apiRequest } from './api'
 import type { BackendRole } from './auth'
-import type { UserProfile } from '../context/UserContext'
 
 export type BackendDoctorProfile = {
   specialty_id: string
@@ -85,15 +85,15 @@ export function mergeUserProfileFromBackend(
         ? 'Администратор'
         : backendRole === 'receptionist'
           ? 'Ресепшен'
-          : isDoctor
-            ? 'Врач'
-            : '',
+          : backendRole === 'laborant'
+            ? 'Лаборатория'
+            : isDoctor
+              ? 'Врач'
+              : '',
     officeNumber: '',
     department: '',
     specialization: isDoctor ? profile.doctor_profile?.specialty_name || '' : '',
-    qualification: isDoctor
-      ? `${profile.doctor_profile?.work_experience_years ?? 0} лет стажа`
-      : '',
+    qualification: isDoctor ? `${profile.doctor_profile?.work_experience_years ?? 0} лет стажа` : '',
     description: isDoctor ? profile.doctor_profile?.description || '' : '',
   }
 }

@@ -1,8 +1,16 @@
 import { Clock3, FileText, Phone, Stethoscope, X } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
+import DoctorLaboratoryOrderCard from '../../components/laboratory/DoctorLaboratoryOrderCard'
 import ProtocolModal from '../../components/patient/ProtocolModal'
 import type { MedicalVisit } from '../../components/patient/MedicalVisitCard'
 import { useUser } from '../../context/UserContext'
+import {
+  createLaboratoryOrder,
+  listLaboratoryOrders,
+  listLaboratoryTestTypes,
+  type LaboratoryOrder,
+  type LaboratoryTestType,
+} from '../../lib/laboratory'
 import {
   addMedicalRecordFiles,
   buildProtocolText,
@@ -90,6 +98,9 @@ export default function DoctorAppointmentsPage() {
   const [isHistoryOpen, setIsHistoryOpen] = useState(false)
   const [isHistoryLoading, setIsHistoryLoading] = useState(false)
   const [selectedProtocol, setSelectedProtocol] = useState<MedicalVisit | null>(null)
+  const [labOrders, setLabOrders] = useState<LaboratoryOrder[]>([])
+  const [labTestTypes, setLabTestTypes] = useState<LaboratoryTestType[]>([])
+  const [labSubmittingVisitID, setLabSubmittingVisitID] = useState<string | null>(null)
 
   async function loadVisits(targetDate = selectedDate) {
     if (!accessToken) return
@@ -110,6 +121,26 @@ export default function DoctorAppointmentsPage() {
   useEffect(() => {
     void loadVisits()
   }, [accessToken, selectedDate])
+
+  useEffect(() => {
+    if (!accessToken) return
+    const token = accessToken
+
+    async function loadLaboratoryData() {
+      try {
+        const [ordersResponse, testTypesResponse] = await Promise.all([
+          listLaboratoryOrders(token),
+          listLaboratoryTestTypes(token),
+        ])
+        setLabOrders(ordersResponse)
+        setLabTestTypes(testTypesResponse)
+      } catch {
+        // Keep the appointments workflow available even if laboratory data fails to load.
+      }
+    }
+
+    void loadLaboratoryData()
+  }, [accessToken])
 
   const visibleVisits = useMemo(
     () => visits.filter((item) => item.status === 'confirmed' || item.status === 'completed'),
@@ -193,6 +224,35 @@ export default function DoctorAppointmentsPage() {
       )
     } finally {
       setIsHistoryLoading(false)
+    }
+  }
+
+  async function handleCreateLaboratoryOrder(
+    visitID: string,
+    payload: {
+      doctor_comment: string
+      items: Array<{ test_type_id: string; notes: string }>
+    },
+  ) {
+    if (!accessToken || !payload.items.length) return
+
+    setLabSubmittingVisitID(visitID)
+    setError('')
+    setSuccess('')
+
+    try {
+      await createLaboratoryOrder(accessToken, visitID, payload)
+      const updatedOrders = await listLaboratoryOrders(accessToken)
+      setLabOrders(updatedOrders)
+      setSuccess('Лабораторное направление создано.')
+    } catch (createError) {
+      setError(
+        createError instanceof Error
+          ? createError.message
+          : 'Не удалось создать лабораторное направление',
+      )
+    } finally {
+      setLabSubmittingVisitID(null)
     }
   }
 
@@ -340,6 +400,7 @@ export default function DoctorAppointmentsPage() {
                 const isVerifyingPatient = verifyPendingVisitID === visit.visit_id
                 const parsedRecord = visitRecord ? parseProtocolText(visitRecord.protocol_text) : null
                 const isCompleted = visit.status === 'completed'
+                const visitLabOrders = labOrders.filter((item) => item.visit_id === visit.visit_id)
 
                 return (
                   <article
@@ -400,7 +461,7 @@ export default function DoctorAppointmentsPage() {
                         </p>
                       </div>
 
-                      <div className="flex shrink-0 flex-col-reverse gap-3 xl:max-w-[360px] xl:justify-end">
+                      <div className="flex shrink-0 flex-col-reverseьов gap-3 xl:max-w-[360px] xl:justify-end">
                         <button
                           type="button"
                           onClick={() => void openPatientHistory(visit)}
@@ -438,10 +499,18 @@ export default function DoctorAppointmentsPage() {
 
                     {isExpanded ? (
                       <div className="mt-6 rounded-3xl border border-slate-200 bg-slate-50 px-5 py-5">
+                        <DoctorLaboratoryOrderCard
+                          visitID={visit.visit_id}
+                          orders={visitLabOrders}
+                          testTypes={labTestTypes}
+                          canCreate={visit.status === 'confirmed'}
+                          isSubmitting={labSubmittingVisitID === visit.visit_id}
+                          onCreateOrder={handleCreateLaboratoryOrder}
+                        />
                         {isRecordLoading ? (
-                          <p className="text-sm text-slate-500">Загрузка медицинской записи...</p>
+                          <p className="mt-5 text-sm text-slate-500">Загрузка медицинской записи...</p>
                         ) : visitRecord ? (
-                          <div className="space-y-5">
+                          <div className="mt-5 space-y-5">
                             <div className="grid gap-4 md:grid-cols-2">
                               <div className="rounded-2xl bg-white px-4 py-4">
                                 <p className="text-sm text-slate-500">Статус пациента</p>
@@ -544,7 +613,7 @@ export default function DoctorAppointmentsPage() {
                         ) : visit.status === 'confirmed' ? (
                           <div className="space-y-4">
                             <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-4 text-sm text-amber-800">
-                              Сначала сохраните протокол, а затем завершайте приём. Бекенд принимает медицинскую запись только для подтверждённого визита.
+                              Сначала сохраните протокол, а затем завершайте приём. После завершения приёма добавить новую медицинскую запись уже нельзя.
                             </div>
 
                             <div className="grid gap-4 md:grid-cols-2">

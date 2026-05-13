@@ -35,7 +35,7 @@ export default function AdminUsersPage() {
   const [staff, setStaff] = useState<StaffMember[]>([])
   const [specialties, setSpecialties] = useState<Specialty[]>([])
   const [search, setSearch] = useState('')
-  const [roleFilter, setRoleFilter] = useState<'' | 'doctor' | 'receptionist'>('')
+  const [roleFilter, setRoleFilter] = useState<'' | 'doctor' | 'receptionist' | 'laborant'>('')
   const [createForm, setCreateForm] = useState<CreateStaffForm>(initialCreateStaffForm)
   const [editForm, setEditForm] = useState<EditStaffForm | null>(null)
   const [specialtyName, setSpecialtyName] = useState('')

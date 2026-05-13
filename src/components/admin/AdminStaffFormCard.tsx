@@ -42,13 +42,7 @@ function FileField({
       <span className="flex items-center gap-2 font-medium text-slate-900">
         <Upload className="h-4 w-4" /> {label}
       </span>
-      <input
-        required={required}
-        multiple
-        type="file"
-        onChange={onChange}
-        className="mt-3 block w-full text-sm text-slate-500"
-      />
+      <input required={required} multiple type="file" onChange={onChange} className="mt-3 block w-full text-sm text-slate-500" />
       {files.length ? <p className="mt-2 text-sm text-slate-500">{fileNames(files)}</p> : null}
     </label>
   )
@@ -68,6 +62,7 @@ export default function AdminStaffFormCard({
   onCancelEdit,
 }: AdminStaffFormCardProps) {
   const isDoctorCreate = createForm.role === 'doctor'
+  const isLaboratoryCreate = createForm.role === 'laborant'
 
   return (
     <AdminCard>
@@ -137,7 +132,7 @@ export default function AdminStaffFormCard({
             </>
           ) : (
             <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 text-sm text-slate-600">
-              Для ресепшена доступно редактирование контактов и активности.
+              Для этой роли доступно редактирование контактов и активности.
             </div>
           )}
 
@@ -182,6 +177,7 @@ export default function AdminStaffFormCard({
             >
               <option value="doctor">Врач</option>
               <option value="receptionist">Сотрудник ресепшена</option>
+              <option value="laborant">Сотрудник лаборатории</option>
             </select>
 
             <input
@@ -287,7 +283,13 @@ export default function AdminStaffFormCard({
                   className="rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-sky-500"
                 />
               </>
-            ) : null}
+            ) : (
+              <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 text-sm text-slate-600 md:col-span-2">
+                {isLaboratoryCreate
+                  ? 'Для лаборатории не требуется специальность и стоимость приёма.'
+                  : 'Для ресепшена не требуется специальность и стоимость приёма.'}
+              </div>
+            )}
 
             <input
               required

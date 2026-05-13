@@ -45,11 +45,15 @@ export function fileNames(files: File[]) {
 }
 
 export function roleLabel(role: StaffMember['role']) {
-  return role === 'doctor' ? 'Врач' : 'Регистратура'
+  if (role === 'doctor') return 'Врач'
+  if (role === 'laborant') return 'Лаборатория'
+  return 'Регистратура'
 }
 
 export function roleBadgeClass(role: StaffMember['role']) {
-  return role === 'doctor' ? 'bg-sky-50 text-sky-700' : 'bg-amber-50 text-amber-700'
+  if (role === 'doctor') return 'bg-sky-50 text-sky-700'
+  if (role === 'laborant') return 'bg-violet-50 text-violet-700'
+  return 'bg-amber-50 text-amber-700'
 }
 
 export function toEditStaffForm(item: StaffMember): EditStaffForm {

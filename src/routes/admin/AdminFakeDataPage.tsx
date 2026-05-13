@@ -17,6 +17,7 @@ const emptySnapshot: FakeDataSnapshot = {
   users: [],
   specialties: [],
   holidays: [],
+  lab_test_types: [],
 }
 
 export default function AdminFakeDataPage() {
@@ -35,7 +36,10 @@ export default function AdminFakeDataPage() {
 
     try {
       const response = await getFakeData(accessToken)
-      setSnapshot(response)
+      setSnapshot({
+        ...emptySnapshot,
+        ...response,
+      })
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Не удалось загрузить тестовые данные')
     } finally {
@@ -56,7 +60,10 @@ export default function AdminFakeDataPage() {
 
     try {
       const response = await populateFakeData(accessToken)
-      setSnapshot(response)
+      setSnapshot({
+        ...emptySnapshot,
+        ...response,
+      })
       setSuccess('Тестовые данные успешно перезаполнены.')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Не удалось заполнить тестовые данные')
@@ -76,7 +83,7 @@ export default function AdminFakeDataPage() {
       const response = await deleteFakeData(accessToken)
       setSnapshot(emptySnapshot)
       setSuccess(
-        `Удалено: пользователей ${response.deleted_users}, специальностей ${response.deleted_specialties}, праздников ${response.deleted_holidays}.`,
+        `Удалено: пользователей ${response.deleted_users}, специальностей ${response.deleted_specialties}, праздников ${response.deleted_holidays}, типов анализов ${response.deleted_lab_test_types ?? 0}.`,
       )
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Не удалось удалить тестовые данные')
@@ -139,12 +146,8 @@ export default function AdminFakeDataPage() {
         </AdminCard>
       </section>
 
-      <section className="mt-8 grid gap-6 xl:grid-cols-3">
-        <AdminFakeDataCollectionCard
-          title="Пользователи"
-          count={snapshot.users.length}
-          isLoading={isLoading}
-        >
+      <section className="mt-8 grid gap-6 xl:grid-cols-2 2xl:grid-cols-4">
+        <AdminFakeDataCollectionCard title="Пользователи" count={snapshot.users.length} isLoading={isLoading}>
           {isLoading ? (
             <p className="text-sm text-slate-500">Загрузка...</p>
           ) : snapshot.users.length ? (
@@ -162,11 +165,7 @@ export default function AdminFakeDataPage() {
           )}
         </AdminFakeDataCollectionCard>
 
-        <AdminFakeDataCollectionCard
-          title="Специальности"
-          count={snapshot.specialties.length}
-          isLoading={isLoading}
-        >
+        <AdminFakeDataCollectionCard title="Специальности" count={snapshot.specialties.length} isLoading={isLoading}>
           {isLoading ? (
             <p className="text-sm text-slate-500">Загрузка...</p>
           ) : snapshot.specialties.length ? (
@@ -181,11 +180,7 @@ export default function AdminFakeDataPage() {
           )}
         </AdminFakeDataCollectionCard>
 
-        <AdminFakeDataCollectionCard
-          title="Праздники"
-          count={snapshot.holidays.length}
-          isLoading={isLoading}
-        >
+        <AdminFakeDataCollectionCard title="Праздники" count={snapshot.holidays.length} isLoading={isLoading}>
           {isLoading ? (
             <p className="text-sm text-slate-500">Загрузка...</p>
           ) : snapshot.holidays.length ? (
@@ -197,6 +192,25 @@ export default function AdminFakeDataPage() {
             ))
           ) : (
             <p className="text-sm text-slate-500">Тестовых праздников нет.</p>
+          )}
+        </AdminFakeDataCollectionCard>
+
+        <AdminFakeDataCollectionCard
+          title="Типы анализов"
+          count={snapshot.lab_test_types?.length ?? 0}
+          isLoading={isLoading}
+        >
+          {isLoading ? (
+            <p className="text-sm text-slate-500">Загрузка...</p>
+          ) : snapshot.lab_test_types?.length ? (
+            snapshot.lab_test_types.map((item) => (
+              <div key={item.lab_test_type_id} className="rounded-2xl bg-slate-50 px-4 py-3">
+                <p className="font-medium text-slate-900">{item.name}</p>
+                <p className="mt-1 text-sm text-slate-500">ID: {item.lab_test_type_id}</p>
+              </div>
+            ))
+          ) : (
+            <p className="text-sm text-slate-500">Тестовых типов анализов нет.</p>
           )}
         </AdminFakeDataCollectionCard>
       </section>

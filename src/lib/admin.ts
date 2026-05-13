@@ -25,7 +25,7 @@ export type DoctorStaff = {
 
 export type StaffMember = {
   user_id: string
-  role: 'doctor' | 'receptionist'
+  role: 'doctor' | 'receptionist' | 'laborant'
   email: string
   phone_number: string
   first_name: string
@@ -78,16 +78,21 @@ export type FakeDataSnapshot = {
   users: FakeDataUser[]
   specialties: FakeDataSpecialty[]
   holidays: FakeDataHoliday[]
+  lab_test_types?: Array<{
+    lab_test_type_id: string
+    name: string
+  }>
 }
 
 export type FakeDataDeleteResponse = {
   deleted_users: number
   deleted_specialties: number
   deleted_holidays: number
+  deleted_lab_test_types?: number
 }
 
 export type CreateStaffPayload = {
-  role: 'doctor' | 'receptionist'
+  role: 'doctor' | 'receptionist' | 'laborant'
   email: string
   first_name: string
   last_name: string
@@ -268,7 +273,7 @@ export function listStaff(
   token: string,
   filters: {
     search?: string
-    role?: '' | 'doctor' | 'receptionist'
+    role?: '' | 'doctor' | 'receptionist' | 'laborant'
     specialtyId?: string
   } = {},
 ) {
