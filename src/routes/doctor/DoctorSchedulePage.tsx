@@ -54,10 +54,9 @@ export default function DoctorSchedulePage() {
   return (
     <div className="w-full bg-[#f7f7f8] px-6 py-10">
       <header>
-        <h1 className="text-[25px] font-semibold text-slate-900">Расписание</h1>
+        <h1 className="text-[25px] font-semibold text-slate-900">График работы врача</h1>
         <p className="mt-2 text-[17px] text-gray-500">
-          Рабочие часы и исключения задаются администратором. Врач может только просматривать
-          текущее расписание.
+          Рабочие дни, часы приёма и исключения
         </p>
       </header>
 

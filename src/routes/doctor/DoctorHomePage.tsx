@@ -1,4 +1,4 @@
-import { CalendarDays, ChevronRight, Clock3, FileText, Phone, Users, X } from 'lucide-react'
+import { CalendarDays, ChevronRight, Clock3, FileText, Users, X } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import ProtocolModal from '../../components/patient/ProtocolModal'
@@ -258,31 +258,22 @@ export default function DoctorHomePage() {
                           </span>
                         </div>
 
-                        <div className="mt-4 flex gap-4 text-[15px] text-slate-600 md:grid-cols-3">
-                          <div className="rounded-2xl bg-slate-50 px-4 py-3">
+                        <div className="mt-4 flex flex-wrap gap-4 text-[15px] text-slate-600">
+                          <div className="w-fit rounded-2xl bg-slate-50 px-4 py-3">
                             <p className="text-xs uppercase tracking-[0.12em] text-slate-400">Время</p>
-                            <p className="mt-2 font-semibold text-slate-900">
+                            <p className="mt-2 inline-flex items-center gap-2 font-semibold text-slate-900">
+                              <Clock3 className="h-4 w-4 text-slate-400" />
                               {formatVisitTime(visit.scheduled_at)}
                             </p>
                           </div>
 
-                          <div className="rounded-2xl bg-slate-50 px-3 py-3 ">
-                            <p className="text-xs uppercase tracking-[0.12em] text-slate-400 ">Специальность</p>
-                            <p className="mt-2 font-semibold text-slate-900">{visit.specialty_name}</p>
-                          </div>
-
-                          <div className="rounded-2xl bg-slate-50 px-4 py-3">
-                            <p className="text-xs uppercase tracking-[0.12em] text-slate-400">Телефон</p>
-                            <p className="mt-2 inline-flex items-center gap-2 font-semibold text-slate-900">
-                              <Phone className="h-4 w-4 text-slate-400" />
-                              {visit.patient_phone_number || 'Не указан'}
+                          <div className="w-fit rounded-2xl bg-slate-50 px-4 py-3">
+                            <p className="text-xs uppercase tracking-[0.12em] text-slate-400">Создано</p>
+                            <p className="mt-2 whitespace-nowrap font-semibold text-slate-900">
+                              {formatVisitDateTime(visit.created_at)}
                             </p>
                           </div>
                         </div>
-
-                        <p className="mt-4 text-[14px] text-slate-400">
-                          Создано: {formatVisitDateTime(visit.created_at)}
-                        </p>
                       </div>
 
                       <div className="flex shrink-0 flex-wrap gap-3">
@@ -297,7 +288,7 @@ export default function DoctorHomePage() {
 
                         <Link
                           to="/doctor/appointments"
-                          className="inline-flex items-center gap-2 rounded-2xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
+                          className="inline-flex items-center gap-2 rounded-2xl bg-sky-700 px-4 py-3 text-sm font-semibold text-white transition hover:bg-sky-800"
                         >
                           Открыть приём
                           <ChevronRight className="h-4 w-4" />

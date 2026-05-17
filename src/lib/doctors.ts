@@ -1,5 +1,6 @@
 import { apiRequest } from './api'
 import { getCachedDoctorDescription } from './doctorDescription'
+import { getCachedDoctorPhoto } from './doctorPhoto'
 
 export type BackendSpecialty = {
   id: string
@@ -30,6 +31,7 @@ export type DoctorListItem = {
   reviewsCount: number
   experience: string
   description: string
+  photoUrl: string
   price: number
   email: string
   phone: string
@@ -52,6 +54,7 @@ export function mapDoctorFromBackend(item: BackendDoctor): DoctorListItem {
     description:
       cachedDescription ||
       `Специализация: ${item.specialty_name}. Контактный телефон: ${item.phone_number || 'не указан'}.`,
+    photoUrl: getCachedDoctorPhoto(item.user_id),
     price: Number(item.appointment_fee),
     email: item.email,
     phone: item.phone_number,

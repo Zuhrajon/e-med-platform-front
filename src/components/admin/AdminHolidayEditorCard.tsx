@@ -92,7 +92,7 @@ export default function AdminHolidayEditorCard({
           <button
             type="submit"
             disabled={!checkDate || isChecking}
-            className="inline-flex items-center gap-2 rounded-2xl bg-slate-900 px-5 py-3 font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400"
+            className="inline-flex items-center gap-2 rounded-2xl bg-sky-700 px-5 py-3 font-semibold text-white transition hover:bg-sky-800 disabled:cursor-not-allowed disabled:bg-slate-400"
           >
             {isChecking ? (
               <LoaderCircle className="h-4 w-4 animate-spin" />

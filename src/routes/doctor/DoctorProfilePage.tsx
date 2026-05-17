@@ -1,10 +1,15 @@
-import { useEffect, useState, type FormEvent } from 'react'
+import { useEffect, useState, type ChangeEvent, type FormEvent } from 'react'
 import ProfileDetailsSection, {
   type ProfileFormState,
 } from '../../components/account/ProfileDetailsSection'
 import SecuritySettingsSection from '../../components/account/SecuritySettingsSection'
 import { useUser } from '../../context/UserContext'
 import { saveCachedDoctorDescription } from '../../lib/doctorDescription'
+import {
+  getCachedDoctorPhoto,
+  removeCachedDoctorPhoto,
+  saveCachedDoctorPhoto,
+} from '../../lib/doctorPhoto'
 import { genderLabelToId, updateMyProfile } from '../../lib/profile'
 
 function buildForm(user: ReturnType<typeof useUser>['user']): ProfileFormState {
@@ -29,6 +34,7 @@ export default function DoctorProfilePage() {
   const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const [photoUrl, setPhotoUrl] = useState(() => getCachedDoctorPhoto(user.userId || ''))
 
   useEffect(() => {
     if (!isEditing) {
@@ -36,8 +42,57 @@ export default function DoctorProfilePage() {
     }
   }, [user, isEditing])
 
+  useEffect(() => {
+    setPhotoUrl(getCachedDoctorPhoto(user.userId || ''))
+  }, [user.userId])
+
   function handleChange(field: keyof ProfileFormState, value: string) {
     setForm((prev) => ({ ...prev, [field]: value }))
+  }
+
+  function handlePhotoChange(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0]
+    event.target.value = ''
+    if (!file || !user.userId) return
+
+    if (!file.type.startsWith('image/')) {
+      setError('Выберите файл изображения.')
+      setSuccess('')
+      return
+    }
+
+    if (file.size > 1024 * 1024) {
+      setError('Размер фото должен быть не больше 1 МБ.')
+      setSuccess('')
+      return
+    }
+
+    const reader = new FileReader()
+    reader.onload = () => {
+      const result = typeof reader.result === 'string' ? reader.result : ''
+      if (!result) return
+
+      saveCachedDoctorPhoto(user.userId || '', result)
+      setPhotoUrl(result)
+      updateUser({ avatar: result })
+      setError('')
+      setSuccess('Фото профиля обновлено.')
+    }
+    reader.onerror = () => {
+      setError('Не удалось загрузить фото.')
+      setSuccess('')
+    }
+    reader.readAsDataURL(file)
+  }
+
+  function handleRemovePhoto() {
+    if (!user.userId) return
+
+    removeCachedDoctorPhoto(user.userId)
+    setPhotoUrl('')
+    updateUser({ avatar: null })
+    setError('')
+    setSuccess('Фото профиля удалено.')
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -106,6 +161,57 @@ export default function DoctorProfilePage() {
       ) : null}
 
       <div className="mt-8 space-y-6">
+        <section className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
+          <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
+            <div className="flex items-center gap-4">
+              {photoUrl ? (
+                <img
+                  src={photoUrl}
+                  alt="Фото врача"
+                  className="h-20 w-20 rounded-full object-cover"
+                />
+              ) : (
+                <div className="flex h-20 w-20 items-center justify-center rounded-full bg-slate-100 text-2xl font-semibold text-slate-900">
+                  {[user.firstName, user.lastName]
+                    .filter(Boolean)
+                    .map((part) => part[0])
+                    .join('')
+                    .slice(0, 2) || 'В'}
+                </div>
+              )}
+
+              <div>
+                <h2 className="text-[22px] font-semibold text-slate-900">Фото врача</h2>
+                <p className="mt-2 text-[15px] text-slate-500">
+                  Это фото будет отображаться в карточке врача.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap gap-3">
+              <label className="cursor-pointer rounded-2xl bg-sky-700 px-5 py-3 text-sm font-semibold text-white transition hover:bg-sky-800">
+                Загрузить фото
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handlePhotoChange}
+                  className="sr-only"
+                />
+              </label>
+
+              {photoUrl ? (
+                <button
+                  type="button"
+                  onClick={handleRemovePhoto}
+                  className="rounded-2xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                >
+                  Удалить
+                </button>
+              ) : null}
+            </div>
+          </div>
+        </section>
+
         <ProfileDetailsSection
           title="Личные и профессиональные данные"
           subtitle="Поля, доступные врачу, синхронизируются с серверным профилем."

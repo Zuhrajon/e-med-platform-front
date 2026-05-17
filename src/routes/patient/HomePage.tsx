@@ -7,6 +7,7 @@ import paper from '../../assets/card-svg/paper.svg'
 import person from '../../assets/card-svg/person.svg'
 import Recomendation from '../../components/patient/Recomendation'
 import { useUser } from '../../context/UserContext'
+import { getCachedDoctorPhoto } from '../../lib/doctorPhoto'
 import { getDoctors } from '../../lib/doctors'
 import {
   formatVisitDateTime,
@@ -125,7 +126,7 @@ export default function HomePage() {
             <button
               type="button"
               onClick={() => navigate('/app/appointments')}
-              className="inline-flex items-center gap-2 rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
+              className="inline-flex items-center gap-2 rounded-[20px] bg-sky-700 px-5 py-3 text-sm font-semibold text-white transition hover:bg-sky-800"
             >
               Все записи
               <ChevronRight className="h-4 w-4" />
@@ -138,6 +139,12 @@ export default function HomePage() {
             <div className="space-y-5">
               {upcomingVisits.slice(0, 4).map((visit) => {
                 const isConfirmed = visit.status === 'confirmed'
+                const doctorPhotoUrl = getCachedDoctorPhoto(visit.doctor_user_id)
+                const doctorInitials = visit.doctor_full_name
+                  .split(' ')
+                  .map((part) => part[0])
+                  .join('')
+                  .slice(0, 2)
 
                 return (
                   <article
@@ -145,7 +152,20 @@ export default function HomePage() {
                     className="rounded-[28px] border border-slate-200 bg-[linear-gradient(180deg,#ffffff_0%,#fbfdff_100%)] px-6 py-6 transition hover:border-sky-200 hover:shadow-sm"
                   >
                     <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
-                      <div className="min-w-0">
+                      <div className="flex min-w-0 gap-4">
+                        {doctorPhotoUrl ? (
+                          <img
+                            src={doctorPhotoUrl}
+                            alt={visit.doctor_full_name}
+                            className="h-14 w-14 shrink-0 rounded-full object-cover"
+                          />
+                        ) : (
+                          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-slate-100 text-lg font-semibold text-slate-900">
+                            {doctorInitials}
+                          </div>
+                        )}
+
+                        <div className="min-w-0">
                         <div className="flex flex-wrap items-center gap-3">
                           <h3 className="text-[22px] font-semibold text-slate-900">
                             {visit.doctor_full_name}
@@ -186,6 +206,7 @@ export default function HomePage() {
                           <UserRound className="h-4 w-4" />
                           Запись создана: {formatVisitDateTime(visit.created_at)}
                         </p>
+                        </div>
                       </div>
                     </div>
                   </article>

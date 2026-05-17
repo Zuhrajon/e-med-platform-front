@@ -3,6 +3,7 @@ import PatientLaboratoryOrdersSection from '../../components/laboratory/PatientL
 import MedicalVisitCard, { type MedicalVisit } from '../../components/patient/MedicalVisitCard'
 import ProtocolModal from '../../components/patient/ProtocolModal'
 import { useUser } from '../../context/UserContext'
+import { getCachedDoctorPhoto } from '../../lib/doctorPhoto'
 import { downloadFile } from '../../lib/files'
 import { listLaboratoryOrders, type LaboratoryOrder } from '../../lib/laboratory'
 import {
@@ -70,6 +71,7 @@ export default function MedicalBookPage() {
         return {
           id: record.record_id,
           doctorName: record.doctor_full_name,
+          doctorPhotoUrl: getCachedDoctorPhoto(record.doctor_user_id),
           specialty: visit?.specialty_name ?? 'Специальность не указана',
           date: formatVisitDateTime(visit?.scheduled_at ?? record.created_at),
           createdAt: formatVisitDateTime(record.created_at),

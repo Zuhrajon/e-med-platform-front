@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { useUser } from '../../context/UserContext'
+import { getCachedDoctorPhoto } from '../../lib/doctorPhoto'
 import {
   formatVisitDateTime,
   formatVisitTime,
@@ -24,6 +25,14 @@ function nextWorkday() {
   }
 
   return toDateInputValue(date)
+}
+
+function getInitials(name: string) {
+  return name
+    .split(' ')
+    .map((part) => part[0])
+    .join('')
+    .slice(0, 2)
 }
 
 export default function AppointmentsPage() {
@@ -159,6 +168,8 @@ export default function AppointmentsPage() {
   function renderVisitCard(visit: Visit) {
     const isPending = pendingVisitID === visit.visit_id
     const isRescheduleOpen = rescheduleVisitID === visit.visit_id
+    const doctorPhotoUrl = getCachedDoctorPhoto(visit.doctor_user_id)
+    const doctorInitials = getInitials(visit.doctor_full_name)
 
     return (
       <article
@@ -166,7 +177,20 @@ export default function AppointmentsPage() {
         className="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm"
       >
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-          <div>
+          <div className="flex min-w-0 gap-4">
+            {doctorPhotoUrl ? (
+              <img
+                src={doctorPhotoUrl}
+                alt={visit.doctor_full_name}
+                className="h-16 w-16 shrink-0 rounded-full object-cover"
+              />
+            ) : (
+              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xl font-semibold text-slate-900">
+                {doctorInitials}
+              </div>
+            )}
+
+            <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-3">
               <h2 className="text-[22px] font-semibold text-slate-900">{visit.doctor_full_name}</h2>
               <span className="rounded-full bg-slate-100 px-3 py-1 text-sm font-medium text-slate-700">
@@ -184,6 +208,7 @@ export default function AppointmentsPage() {
             <p className="mt-1 text-[15px] text-slate-500">
               Запись создана: {formatVisitDateTime(visit.created_at)}
             </p>
+            </div>
           </div>
 
           {(visit.status === 'created' || visit.status === 'confirmed') && (

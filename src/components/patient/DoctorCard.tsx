@@ -18,9 +18,17 @@ export default function DoctorCard({ doctor }: DoctorCardProps) {
   return (
     <article className="rounded-[30px] border border-slate-200 bg-white px-6 py-6 shadow-[0_8px_24px_rgba(15,23,42,0.06)]">
       <div className="flex gap-4">
-        <div className="flex h-18 w-18 shrink-0 items-center justify-center rounded-full bg-slate-100 text-[30px] font-semibold text-slate-900">
-          {initials}
-        </div>
+        {doctor.photoUrl ? (
+          <img
+            src={doctor.photoUrl}
+            alt={doctor.name}
+            className="h-18 w-18 shrink-0 rounded-full object-cover"
+          />
+        ) : (
+          <div className="flex h-18 w-18 shrink-0 items-center justify-center rounded-full bg-slate-100 text-[30px] font-semibold text-slate-900">
+            {initials}
+          </div>
+        )}
 
         <div className="min-w-0 flex-1">
           <h2 className="text-[21px] font-semibold leading-tight text-slate-900">{doctor.name}</h2>
@@ -33,14 +41,9 @@ export default function DoctorCard({ doctor }: DoctorCardProps) {
             <p>
               <span className="font-semibold text-slate-900">Стаж:</span> {doctor.experience}
             </p>
-
-            <p>
-              <span className="font-semibold text-slate-900">Рейтинг:</span> {doctor.rating}{' '}
-              ({doctor.reviewsCount} отзывов)
-            </p>
           </div>
 
-          <p className="mt-5 line-clamp-3 max-w-[520px] text-[15px] leading-8 text-slate-500">
+          <p className="mt-5 line-clamp-2 max-w-[520px] text-[15px] leading-8 text-slate-500">
             {doctor.description}
           </p>
 
@@ -52,7 +55,7 @@ export default function DoctorCard({ doctor }: DoctorCardProps) {
             <button
               type="button"
               onClick={() => navigate(`/app/doctors/${doctor.id}`)}
-              className="rounded-[20px] bg-sky-500 px-6 py-3 text-[15px] font-medium text-white transition hover:bg-sky-600"
+              className="rounded-[20px] bg-sky-700 px-6 py-3 text-[15px] font-medium text-white transition hover:bg-sky-800"
             >
               Записаться
             </button>

@@ -47,7 +47,7 @@ function DoctorNavigation() {
             }
           >
             <CalendarDays className="h-5 w-5" />
-            <span>Расписание</span>
+            <span>График работы</span>
           </NavLink>
 
           <NavLink

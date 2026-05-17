@@ -320,35 +320,18 @@ export default function AdminUsersPage() {
         </AdminStatusMessage>
       ) : null}
 
-      <section className="mt-8 grid gap-6 2xl:grid-cols-[1.2fr_0.9fr]">
-        <div className="space-y-6">
-          <AdminStaffListCard
-            staff={staff}
-            isLoading={isLoading}
-            search={search}
-            roleFilter={roleFilter}
-            pendingActionId={pendingActionId}
-            onSearchSubmit={onSearch}
-            onSearchChange={setSearch}
-            onRoleFilterChange={setRoleFilter}
-            onEdit={onEdit}
-            onToggleStatus={onToggleStatus}
-            onResetPassword={onResetPassword}
-            onDelete={onDelete}
-          />
+      <section className="mt-8 space-y-6">
+        <AdminSpecialtiesCard
+          specialties={specialties}
+          specialtyName={specialtyName}
+          isSaving={isSavingSpecialty}
+          onNameChange={setSpecialtyName}
+          onSubmit={onCreateSpecialty}
+          onToggle={onToggleSpecialty}
+          onDelete={onDeleteSpecialty}
+        />
 
-          <AdminSpecialtiesCard
-            specialties={specialties}
-            specialtyName={specialtyName}
-            isSaving={isSavingSpecialty}
-            onNameChange={setSpecialtyName}
-            onSubmit={onCreateSpecialty}
-            onToggle={onToggleSpecialty}
-            onDelete={onDeleteSpecialty}
-          />
-        </div>
-
-        <div ref={formRef} className="space-y-6">
+        <div ref={formRef}>
           <AdminStaffFormCard
             createForm={createForm}
             editForm={editForm}
@@ -363,6 +346,21 @@ export default function AdminUsersPage() {
             onCancelEdit={() => setEditForm(null)}
           />
         </div>
+
+        <AdminStaffListCard
+          staff={staff}
+          isLoading={isLoading}
+          search={search}
+          roleFilter={roleFilter}
+          pendingActionId={pendingActionId}
+          onSearchSubmit={onSearch}
+          onSearchChange={setSearch}
+          onRoleFilterChange={setRoleFilter}
+          onEdit={onEdit}
+          onToggleStatus={onToggleStatus}
+          onResetPassword={onResetPassword}
+          onDelete={onDelete}
+        />
       </section>
     </div>
   )

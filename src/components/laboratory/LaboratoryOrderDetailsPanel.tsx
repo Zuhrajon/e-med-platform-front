@@ -180,7 +180,7 @@ export default function LaboratoryOrderDetailsPanel({
                   isCompleting ||
                   order.items.some((item) => !(resultValues[item.test_type_id] || '').trim())
                 }
-                className="inline-flex items-center gap-2 rounded-2xl bg-emerald-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:bg-slate-400"
+                className="inline-flex items-center gap-2 rounded-2xl bg-sky-700 px-5 py-3 text-sm font-semibold text-white transition hover:bg-sky-800 disabled:bg-slate-400"
               >
                 {isCompleting ? <LoaderCircle className="h-4 w-4 animate-spin" /> : null}
                 Завершить и сохранить результаты

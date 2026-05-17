@@ -153,7 +153,7 @@ export default function SecuritySettingsSection({
               type="button"
               onClick={handleSavePassword}
               disabled={isSaving}
-              className="rounded-2xl bg-emerald-600 px-6 py-3 text-base font-medium text-white transition hover:bg-emerald-700 disabled:opacity-70"
+              className="rounded-2xl bg-sky-700 px-6 py-3 text-base font-medium text-white transition hover:bg-sky-800 disabled:opacity-70"
             >
               {isSaving ? 'Сохраняем...' : 'Сохранить'}
             </button>

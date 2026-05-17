@@ -162,9 +162,17 @@ export default function DoctorDetailsPage() {
 
       <div className="rounded-3xl border border-gray-200 bg-white p-8 shadow-sm">
         <div className="flex items-start gap-6">
-          <div className="flex h-24 w-24 items-center justify-center rounded-full bg-gray-100 text-3xl text-slate-900">
-            {initials}
-          </div>
+          {currentDoctor.photoUrl ? (
+            <img
+              src={currentDoctor.photoUrl}
+              alt={currentDoctor.name}
+              className="h-24 w-24 rounded-full object-cover"
+            />
+          ) : (
+            <div className="flex h-24 w-24 items-center justify-center rounded-full bg-gray-100 text-3xl text-slate-900">
+              {initials}
+            </div>
+          )}
 
           <div className="flex-1">
             <h1 className="text-3xl font-semibold text-slate-900">{currentDoctor.name}</h1>

@@ -318,7 +318,7 @@ export default function StaffPatientsPage({ roleLabel }: StaffPatientsPageProps)
                 </select>
                 <button
                   type="submit"
-                  className="inline-flex items-center gap-2 rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
+                  className="inline-flex items-center gap-2 rounded-2xl bg-sky-700 px-5 py-3 text-sm font-semibold text-white transition hover:bg-sky-800"
                 >
                   <Search className="h-4 w-4" />
                   Найти

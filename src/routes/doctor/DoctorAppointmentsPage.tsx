@@ -1,4 +1,4 @@
-import { Clock3, FileText, Phone, Stethoscope, X } from 'lucide-react'
+import { Clock3, FileText, X } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import DoctorLaboratoryOrderCard from '../../components/laboratory/DoctorLaboratoryOrderCard'
 import ProtocolModal from '../../components/patient/ProtocolModal'
@@ -28,6 +28,7 @@ import {
   updateVisitStatus,
   type Visit,
   type VisitDetails,
+  type VisitStatus,
 } from '../../lib/visits'
 import {
   getPatientByID,
@@ -77,6 +78,7 @@ function mapRecordToProtocolVisit(record: MedicalCardRecord, visits: Visit[]): M
 export default function DoctorAppointmentsPage() {
   const { accessToken } = useUser()
   const [selectedDate, setSelectedDate] = useState(() => toDateInputValue(new Date()))
+  const [statusFilter, setStatusFilter] = useState<'' | Extract<VisitStatus, 'confirmed' | 'completed'>>('')
   const [visits, setVisits] = useState<Visit[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
@@ -109,8 +111,10 @@ export default function DoctorAppointmentsPage() {
     setError('')
 
     try {
-      const response = await listVisits(accessToken, { date: targetDate })
-      setVisits(response.sort((a, b) => a.scheduled_at.localeCompare(b.scheduled_at)))
+      const response = await listVisits(accessToken, {
+        date: targetDate || undefined,
+      })
+      setVisits(response.sort((a, b) => b.scheduled_at.localeCompare(a.scheduled_at)))
     } catch (loadError) {
       setError(loadError instanceof Error ? loadError.message : 'Не удалось загрузить приёмы')
     } finally {
@@ -143,8 +147,24 @@ export default function DoctorAppointmentsPage() {
   }, [accessToken])
 
   const visibleVisits = useMemo(
-    () => visits.filter((item) => item.status === 'confirmed' || item.status === 'completed'),
-    [visits],
+    () =>
+      visits.filter((item) => {
+        const isDoctorWorkStatus = item.status === 'confirmed' || item.status === 'completed'
+        const matchesStatus = !statusFilter || item.status === statusFilter
+
+        return isDoctorWorkStatus && matchesStatus
+      }),
+    [visits, statusFilter],
+  )
+
+  const confirmedCount = useMemo(
+    () => visibleVisits.filter((item) => item.status === 'confirmed').length,
+    [visibleVisits],
+  )
+
+  const completedCount = useMemo(
+    () => visibleVisits.filter((item) => item.status === 'completed').length,
+    [visibleVisits],
   )
 
   async function handleComplete(visitID: string) {
@@ -342,18 +362,51 @@ export default function DoctorAppointmentsPage() {
     <div className="w-full bg-[#f7f7f8] px-6 py-10">
       <header className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <h1 className="text-[28px] font-semibold text-slate-900">Мои приёмы</h1>
+          <h1 className="text-[28px] font-semibold text-slate-900">Журнал приёмов</h1>
           <p className="mt-3 text-[17px] text-gray-500">
-            Подтверждённые записи, которые уже передала регистратура
+            Все записи пациентов с фильтрацией по дате и статусу
           </p>
         </div>
 
-        <input
-          type="date"
-          value={selectedDate}
-          onChange={(event) => setSelectedDate(event.target.value)}
-          className="rounded-2xl border border-slate-200 bg-white px-4 py-3 outline-none transition focus:border-sky-500"
-        />
+        <div className="flex flex-wrap items-center gap-3">
+          <input
+            type="date"
+            value={selectedDate}
+            onChange={(event) => setSelectedDate(event.target.value)}
+            className="h-12 rounded-2xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 outline-none transition focus:border-sky-500"
+          />
+
+          <button
+            type="button"
+            onClick={() => setSelectedDate('')}
+            className="h-12 rounded-2xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+          >
+            Все даты
+          </button>
+
+          <div className="flex h-12 overflow-hidden rounded-2xl border border-slate-200 bg-white">
+            {[
+              { label: 'Все статусы', value: '' },
+              { label: 'Подтверждённые', value: 'confirmed' },
+              { label: 'Завершённые', value: 'completed' },
+            ].map((item) => (
+              <button
+                key={item.label}
+                type="button"
+                onClick={() =>
+                  setStatusFilter(item.value as '' | Extract<VisitStatus, 'confirmed' | 'completed'>)
+                }
+                className={`h-full px-4 text-sm font-semibold transition ${
+                  statusFilter === item.value
+                    ? 'bg-sky-700 text-white'
+                    : 'bg-white text-slate-700 hover:bg-slate-50'
+                }`}
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
+        </div>
       </header>
 
       {success ? (
@@ -372,12 +425,22 @@ export default function DoctorAppointmentsPage() {
         <div className="border-b border-slate-100 bg-[linear-gradient(135deg,#eef7ff_0%,#ffffff_55%,#f8fbff_100%)] px-8 py-8">
           <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
             <div>
-              <h2 className="text-[26px] font-semibold text-slate-900">Приёмы на день</h2>
-              <p className="mt-2 text-[15px] text-slate-500">Большой рабочий список на выбранную дату</p>
+              <h2 className="text-[26px] font-semibold text-slate-900">Список приёмов</h2>
+              <p className="mt-2 text-[15px] text-slate-500">
+                {selectedDate ? 'Записи на выбранную дату' : 'Записи за всё время'}
+              </p>
             </div>
 
-            <div className="rounded-2xl bg-white/80 px-4 py-3 text-sm text-slate-600 ring-1 ring-slate-100">
-              Всего пациентов: <span className="font-semibold text-slate-900">{visibleVisits.length}</span>
+            <div className="flex flex-wrap gap-3 text-sm text-slate-600">
+              <div className="rounded-2xl bg-white/80 px-4 py-3 ring-1 ring-slate-100">
+                Всего: <span className="font-semibold text-slate-900">{visibleVisits.length}</span>
+              </div>
+              <div className="rounded-2xl bg-white/80 px-4 py-3 ring-1 ring-slate-100">
+                Подтверждены: <span className="font-semibold text-slate-900">{confirmedCount}</span>
+              </div>
+              <div className="rounded-2xl bg-white/80 px-4 py-3 ring-1 ring-slate-100">
+                Завершены: <span className="font-semibold text-slate-900">{completedCount}</span>
+              </div>
             </div>
           </div>
         </div>
@@ -424,8 +487,8 @@ export default function DoctorAppointmentsPage() {
                           </span>
                         </div>
 
-                        <div className="mt-5 flex gap-3 md:grid-cols-3">
-                          <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5">
+                        <div className="mt-5 flex flex-wrap gap-3">
+                          <div className="w-fit rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5">
                             <div className="flex items-center gap-2 text-slate-400">
                               <Clock3 className="h-4 w-4" />
                               <p className="text-xs uppercase tracking-[0.12em]">Время</p>
@@ -435,30 +498,16 @@ export default function DoctorAppointmentsPage() {
                             </p>
                           </div>
 
-                          <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5">
+                          <div className="w-fit rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5">
                             <div className="flex items-center gap-2 text-slate-400">
-                              <Stethoscope className="h-4 w-4" />
-                              <p className="text-xs uppercase tracking-[0.12em]">Специальность</p>
+                              <FileText className="h-4 w-4" />
+                              <p className="text-xs uppercase tracking-[0.12em]">Создано</p>
                             </div>
-                            <p className="mt-2 text-[15px] font-semibold text-slate-900">
-                              {visit.specialty_name}
-                            </p>
-                          </div>
-
-                          <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5">
-                            <div className="flex items-center gap-2 text-slate-400">
-                              <Phone className="h-4 w-4" />
-                              <p className="text-xs uppercase tracking-[0.12em]">Телефон</p>
-                            </div>
-                            <p className="mt-2 text-[15px] font-semibold text-slate-900">
-                              {visit.patient_phone_number || 'Не указан'}
+                            <p className="mt-2 whitespace-nowrap text-[15px] font-semibold text-slate-900">
+                              {formatVisitDateTime(visitDetails?.created_at ?? visit.created_at)}
                             </p>
                           </div>
                         </div>
-
-                        <p className="mt-5 text-[14px] text-slate-400">
-                          Запись создана: {formatVisitDateTime(visitDetails?.created_at ?? visit.created_at)}
-                        </p>
                       </div>
 
                       <div className="flex shrink-0 flex-col-reverseьов gap-3 xl:max-w-[360px] xl:justify-end">
@@ -719,7 +768,7 @@ export default function DoctorAppointmentsPage() {
             </div>
           ) : (
             <div className="rounded-3xl border border-dashed border-slate-300 px-6 py-10 text-center text-[18px] text-slate-500">
-              На выбранную дату подтверждённых приёмов нет.
+              Приёмов по выбранным фильтрам нет.
             </div>
           )}
         </div>

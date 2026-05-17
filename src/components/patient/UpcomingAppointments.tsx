@@ -3,6 +3,7 @@ import { Calendar, Clock } from 'lucide-react'
 export type UpcomingAppointmentItem = {
   id: string
   doctorName: string
+  doctorPhotoUrl?: string
   specialty: string
   date: string
   time: string
@@ -79,9 +80,17 @@ export default function UpcomingAppointments({
               >
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex items-start gap-5">
-                    <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-gray-100 text-[22px] font-medium text-slate-800">
-                      {initials}
-                    </div>
+                    {appointment.doctorPhotoUrl ? (
+                      <img
+                        src={appointment.doctorPhotoUrl}
+                        alt={appointment.doctorName}
+                        className="h-16 w-16 shrink-0 rounded-full object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-gray-100 text-[22px] font-medium text-slate-800">
+                        {initials}
+                      </div>
+                    )}
 
                     <div>
                       <h3 className="text-[20px] font-semibold leading-tight text-slate-900">
@@ -135,7 +144,7 @@ export default function UpcomingAppointments({
 
                       <button
                         type="button"
-                        className="flex-1 rounded-xl bg-sky-600 px-4 py-3 text-[16px] font-semibold text-white transition hover:bg-sky-700"
+                        className="flex-1 rounded-xl bg-sky-700 px-4 py-3 text-[16px] font-semibold text-white transition hover:bg-sky-800"
                       >
                         Перенести
                       </button>

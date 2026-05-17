@@ -25,6 +25,7 @@ type ProtocolData = {
 
 type ProtocolVisit = {
   doctorName: string
+  doctorPhotoUrl?: string
   date: string
   protocol?: ProtocolData
 }
@@ -59,9 +60,19 @@ export default function ProtocolModal({ visit, onClose }: ProtocolModalProps) {
 
         <div className="overflow-y-auto px-10 py-8">
           <div className="grid grid-cols-1 gap-4 rounded-2xl bg-gray-100 px-6 py-6 md:grid-cols-2">
-            <div>
-              <p className="text-[16px] text-gray-500">Врач</p>
-              <p className="mt-2 text-[20px] font-semibold text-slate-900">{visit.doctorName}</p>
+            <div className="flex items-center gap-4">
+              {visit.doctorPhotoUrl ? (
+                <img
+                  src={visit.doctorPhotoUrl}
+                  alt={visit.doctorName}
+                  className="h-14 w-14 shrink-0 rounded-full object-cover"
+                />
+              ) : null}
+
+              <div>
+                <p className="text-[16px] text-gray-500">Врач</p>
+                <p className="mt-2 text-[20px] font-semibold text-slate-900">{visit.doctorName}</p>
+              </div>
             </div>
 
             <div>
