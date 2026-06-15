@@ -2,6 +2,7 @@ import { Ban, CheckCircle2, Pencil, RefreshCcw, Trash2 } from 'lucide-react'
 import type { FormEvent } from 'react'
 import type { StaffMember } from '../../lib/admin'
 import { formatCurrency } from '../../routes/admin/admin-utils'
+import AvatarImage from '../common/AvatarImage'
 import AdminCard from './AdminCard'
 import { roleBadgeClass, roleLabel } from './AdminUsers.shared'
 
@@ -81,20 +82,38 @@ export default function AdminStaffListCard({
                 key={item.user_id}
                 className="flex flex-col gap-4 rounded-3xl border border-slate-200 px-5 py-4"
               >
-                <div className="flex flex-wrap items-center gap-3">
-                  <p className="text-lg font-semibold text-slate-900">{item.full_name}</p>
-                  <span
-                    className={`rounded-full px-3 py-1 text-xs font-semibold ${roleBadgeClass(item.role)}`}
-                  >
-                    {roleLabel(item.role)}
-                  </span>
-                  <span
-                    className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                      item.is_active ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-600'
-                    }`}
-                  >
-                    {item.is_active ? 'Активен' : 'Неактивен'}
-                  </span>
+                <div className="flex items-center gap-4">
+                  {item.avatar_url ? (
+                    <AvatarImage
+                      src={item.avatar_url}
+                      alt={item.full_name}
+                      className="h-14 w-14 shrink-0 rounded-full object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-slate-100 text-sm font-semibold text-slate-900">
+                      {item.full_name
+                        .split(' ')
+                        .map((part) => part[0])
+                        .join('')
+                        .slice(0, 2) || 'С'}
+                    </div>
+                  )}
+
+                  <div className="flex flex-wrap items-center gap-3">
+                    <p className="text-lg font-semibold text-slate-900">{item.full_name}</p>
+                    <span
+                      className={`rounded-full px-3 py-1 text-xs font-semibold ${roleBadgeClass(item.role)}`}
+                    >
+                      {roleLabel(item.role)}
+                    </span>
+                    <span
+                      className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                        item.is_active ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-600'
+                      }`}
+                    >
+                      {item.is_active ? 'Активен' : 'Неактивен'}
+                    </span>
+                  </div>
                 </div>
 
                 <div className="grid gap-2 text-sm text-slate-500 md:grid-cols-2">

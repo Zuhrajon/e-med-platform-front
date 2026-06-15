@@ -11,6 +11,8 @@ export type Visit = {
   doctor_full_name: string
   specialty_id: string
   specialty_name: string
+  doctor_avatar_file_id?: string
+  doctor_avatar_url?: string
   scheduled_at: string
   status: VisitStatus
   created_at: string
@@ -47,6 +49,12 @@ export function listVisits(
   params: {
     status?: VisitStatus
     date?: string
+    dateFrom?: string
+    dateTo?: string
+    search?: string
+    sort?: 'scheduled_at_asc' | 'scheduled_at_desc'
+    limit?: number
+    offset?: number
   } = {},
 ) {
   const query = new URLSearchParams()
@@ -57,6 +65,24 @@ export function listVisits(
 
   if (params.date) {
     query.set('date', params.date)
+  }
+  if (params.dateFrom) {
+    query.set('date_from', params.dateFrom)
+  }
+  if (params.dateTo) {
+    query.set('date_to', params.dateTo)
+  }
+  if (params.search?.trim()) {
+    query.set('search', params.search.trim())
+  }
+  if (params.sort) {
+    query.set('sort', params.sort)
+  }
+  if (typeof params.limit === 'number') {
+    query.set('limit', String(params.limit))
+  }
+  if (typeof params.offset === 'number') {
+    query.set('offset', String(params.offset))
   }
 
   const suffix = query.toString() ? `?${query.toString()}` : ''

@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom'
 import ProtocolModal from '../../components/patient/ProtocolModal'
 import type { MedicalVisit } from '../../components/patient/MedicalVisitCard'
 import { useUser } from '../../context/UserContext'
+import { listLaboratoryOrders, type LaboratoryOrder } from '../../lib/laboratory'
 import {
   listMedicalCardRecords,
   parseProtocolText,
@@ -25,9 +26,16 @@ function getFormattedToday() {
   }).format(new Date())
 }
 
-function mapRecordToProtocolVisit(record: MedicalCardRecord, visits: Visit[]): MedicalVisit {
+function mapRecordToProtocolVisit(
+  record: MedicalCardRecord,
+  visits: Visit[],
+  labOrders: LaboratoryOrder[],
+): MedicalVisit {
   const linkedVisit = visits.find((visit) => visit.visit_id === record.visit_id)
   const protocol = parseProtocolText(record.protocol_text)
+  const recordLabOrders = labOrders.filter(
+    (order) => order.visit_id === record.visit_id && order.status === 'completed',
+  )
 
   return {
     id: record.record_id,
@@ -46,6 +54,7 @@ function mapRecordToProtocolVisit(record: MedicalCardRecord, visits: Visit[]): M
         sizeBytes: file.size_bytes,
         contentType: file.content_type,
       })),
+      labOrders: recordLabOrders,
     },
   }
 }
@@ -59,6 +68,7 @@ export default function DoctorHomePage() {
   const [historyPatientName, setHistoryPatientName] = useState('')
   const [historyRecords, setHistoryRecords] = useState<MedicalCardRecord[]>([])
   const [historyVisitMap, setHistoryVisitMap] = useState<Record<string, Visit[]>>({})
+  const [labOrders, setLabOrders] = useState<LaboratoryOrder[]>([])
   const [isHistoryOpen, setIsHistoryOpen] = useState(false)
   const [isHistoryLoading, setIsHistoryLoading] = useState(false)
   const [selectedProtocol, setSelectedProtocol] = useState<MedicalVisit | null>(null)
@@ -131,12 +141,14 @@ export default function DoctorHomePage() {
     setHistoryError('')
 
     try {
-      const [recordsResponse, visitsResponse] = await Promise.all([
+      const [recordsResponse, visitsResponse, labOrdersResponse] = await Promise.all([
         listMedicalCardRecords(accessToken, visit.patient_user_id),
         listVisits(accessToken),
+        listLaboratoryOrders(accessToken),
       ])
 
       setHistoryRecords(recordsResponse)
+      setLabOrders(labOrdersResponse)
       setHistoryVisitMap((prev) => ({
         ...prev,
         [visit.patient_user_id]: visitsResponse.filter(
@@ -367,7 +379,9 @@ export default function DoctorHomePage() {
                             <button
                               type="button"
                               onClick={() =>
-                                setSelectedProtocol(mapRecordToProtocolVisit(record, activeHistoryVisits))
+                                setSelectedProtocol(
+                                  mapRecordToProtocolVisit(record, activeHistoryVisits, labOrders),
+                                )
                               }
                               className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-sky-200 hover:bg-sky-50 hover:text-sky-700"
                             >

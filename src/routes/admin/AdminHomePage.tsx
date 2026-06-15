@@ -8,9 +8,11 @@ import AdminUpcomingHolidaysCard from '../../components/admin/AdminUpcomingHolid
 import { useUser } from '../../context/UserContext'
 import {
   checkWorkingDay,
+  getAdminDashboard,
   listDoctors,
   listHolidays,
   listSpecialties,
+  type AdminDashboardStats,
   type Holiday,
   type Specialty,
 } from '../../lib/admin'
@@ -20,6 +22,7 @@ type DashboardState = {
   doctors: number
   specialties: Specialty[]
   holidays: Holiday[]
+  stats: AdminDashboardStats | null
   todayStatus: {
     is_working: boolean
     is_holiday: boolean
@@ -42,6 +45,7 @@ export default function AdminHomePage() {
     doctors: 0,
     specialties: [],
     holidays: [],
+    stats: null,
     todayStatus: null,
   })
   const [isLoading, setIsLoading] = useState(true)
@@ -60,7 +64,8 @@ export default function AdminHomePage() {
       setError(null)
 
       try {
-        const [doctors, specialties, holidays, todayStatus] = await Promise.all([
+        const [dashboard, doctors, specialties, holidays, todayStatus] = await Promise.all([
+          getAdminDashboard(token),
           listDoctors(token),
           listSpecialties(token),
           listHolidays(token, currentYear),
@@ -73,6 +78,7 @@ export default function AdminHomePage() {
           doctors: doctors.length,
           specialties,
           holidays,
+          stats: dashboard,
           todayStatus,
         })
       } catch (err) {
@@ -104,28 +110,40 @@ export default function AdminHomePage() {
 
   const statCards = [
     {
-      title: 'Врачи в системе',
-      value: state.doctors,
+      title: 'Пользователей всего',
+      value: state.stats?.users.total ?? state.doctors,
       icon: Users,
       tone: 'bg-sky-50 text-sky-700',
     },
     {
-      title: 'Активные специальности',
-      value: activeSpecialties,
+      title: 'Активные сотрудники',
+      value: state.stats?.users.active_staff ?? state.doctors,
       icon: Stethoscope,
       tone: 'bg-emerald-50 text-emerald-700',
     },
     {
-      title: 'Праздничные дни',
-      value: state.holidays.length,
+      title: 'Записей всего',
+      value: state.stats?.visits.total ?? state.holidays.length,
       icon: CalendarDays,
       tone: 'bg-amber-50 text-amber-700',
     },
     {
-      title: 'Статус сегодняшнего дня',
-      value: state.todayStatus?.is_working ? 'Рабочий' : 'Нерабочий',
+      title: 'Готовых анализов',
+      value: state.stats?.laboratory.completed ?? (state.todayStatus?.is_working ? 'Рабочий' : 'Нерабочий'),
       icon: Activity,
       tone: 'bg-rose-50 text-rose-700',
+    },
+    {
+      title: 'Активные специальности',
+      value: state.stats?.catalogs.specialties ?? activeSpecialties,
+      icon: Stethoscope,
+      tone: 'bg-violet-50 text-violet-700',
+    },
+    {
+      title: 'Неподтверждённые пациенты',
+      value: state.stats?.users.unverified_patients ?? 0,
+      icon: Users,
+      tone: 'bg-slate-100 text-slate-700',
     },
   ]
 

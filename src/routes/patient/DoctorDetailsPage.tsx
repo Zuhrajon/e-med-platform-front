@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
+import AvatarImage from '../../components/common/AvatarImage'
 import { useUser } from '../../context/UserContext'
 import { getDoctors, mapDoctorFromBackend, type DoctorListItem } from '../../lib/doctors'
 import { createVisit, getAvailableSlots, toDateInputValue, type AvailableSlot } from '../../lib/visits'
@@ -163,7 +164,7 @@ export default function DoctorDetailsPage() {
       <div className="rounded-3xl border border-gray-200 bg-white p-8 shadow-sm">
         <div className="flex items-start gap-6">
           {currentDoctor.photoUrl ? (
-            <img
+            <AvatarImage
               src={currentDoctor.photoUrl}
               alt={currentDoctor.name}
               className="h-24 w-24 rounded-full object-cover"

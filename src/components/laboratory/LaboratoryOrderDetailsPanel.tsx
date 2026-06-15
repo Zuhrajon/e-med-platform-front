@@ -15,7 +15,11 @@ type LaboratoryOrderDetailsPanelProps = {
   completeOrderID: string | null
   onAccept: (orderID: string) => Promise<void>
   onComplete: (orderID: string, payload: CompleteLaboratoryOrderPayload) => Promise<void>
-  onUploadFiles: (orderID: string, files: File[]) => Promise<void>
+  onCompleteWithFiles: (
+    orderID: string,
+    payload: CompleteLaboratoryOrderPayload,
+    files: File[],
+  ) => Promise<void>
   onDownloadFile: (fileID: string, fileName: string) => Promise<void>
 }
 
@@ -26,7 +30,7 @@ export default function LaboratoryOrderDetailsPanel({
   completeOrderID,
   onAccept,
   onComplete,
-  onUploadFiles,
+  onCompleteWithFiles,
   onDownloadFile,
 }: LaboratoryOrderDetailsPanelProps) {
   const [laboratoryComment, setLaboratoryComment] = useState('')
@@ -79,12 +83,23 @@ export default function LaboratoryOrderDetailsPanel({
           <p>Врач: {order.doctor_full_name}</p>
           <p>Создано: {formatVisitDateTime(order.created_at)}</p>
           <p>Принято: {order.accepted_at ? formatVisitDateTime(order.accepted_at) : 'Ещё нет'}</p>
+          <p>Завершено: {order.completed_at ? formatVisitDateTime(order.completed_at) : 'Ещё нет'}</p>
+          <p>Просмотрено врачом: {order.reviewed_at ? formatVisitDateTime(order.reviewed_at) : 'Ещё нет'}</p>
         </div>
 
         {order.doctor_comment ? (
           <div className="rounded-2xl bg-slate-50 px-4 py-4 text-sm text-slate-700">
             <p className="font-semibold text-slate-900">Комментарий врача</p>
             <p className="mt-2 whitespace-pre-line">{order.doctor_comment}</p>
+          </div>
+        ) : null}
+
+        {order.reviewed_at || order.doctor_result_comment ? (
+          <div className="rounded-2xl bg-sky-50 px-4 py-4 text-sm text-slate-700">
+            <p className="font-semibold text-slate-900">Комментарий врача по результату</p>
+            <p className="mt-2 whitespace-pre-line">
+              {order.doctor_result_comment || 'Результат просмотрен врачом.'}
+            </p>
           </div>
         ) : null}
       </div>
@@ -159,23 +174,22 @@ export default function LaboratoryOrderDetailsPanel({
             <div className="flex flex-wrap gap-3">
               <button
                 type="button"
-                onClick={() => void onUploadFiles(order.order_id, selectedFiles)}
-                disabled={!selectedFiles.length || isCompleting}
-                className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-60"
-              >
-                Загрузить файлы
-              </button>
-              <button
-                type="button"
-                onClick={() =>
-                  void onComplete(order.order_id, {
+                onClick={() => {
+                  const payload = {
                     laboratory_comment: laboratoryComment,
                     items: order.items.map((item) => ({
                       test_type_id: item.test_type_id,
                       result_text: resultValues[item.test_type_id] || '',
                     })),
-                  })
-                }
+                  }
+
+                  if (selectedFiles.length) {
+                    void onCompleteWithFiles(order.order_id, payload, selectedFiles)
+                    return
+                  }
+
+                  void onComplete(order.order_id, payload)
+                }}
                 disabled={
                   isCompleting ||
                   order.items.some((item) => !(resultValues[item.test_type_id] || '').trim())

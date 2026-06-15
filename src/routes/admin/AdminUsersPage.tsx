@@ -12,6 +12,7 @@ import {
   type EditStaffForm,
 } from '../../components/admin/AdminUsers.shared'
 import { useUser } from '../../context/UserContext'
+import { downloadFile } from '../../lib/files'
 import {
   createDoctorStaff,
   createSpecialty,
@@ -120,9 +121,14 @@ export default function AdminUsersPage() {
   }
 
   function onFiles(
-    key: 'passport_files' | 'diploma_files' | 'employment_record_files',
+    key: 'passport_files' | 'diploma_files' | 'employment_record_files' | 'avatar_file',
     event: ChangeEvent<HTMLInputElement>,
   ) {
+    if (key === 'avatar_file') {
+      updateCreate(key, event.target.files?.[0] ?? null)
+      return
+    }
+
     updateCreate(key, Array.from(event.target.files ?? []))
   }
 
@@ -143,7 +149,13 @@ export default function AdminUsersPage() {
       const payload: CreateStaffPayload =
         createForm.role === 'doctor'
           ? createForm
-          : { ...createForm, specialty_id: '', work_experience_years: '', appointment_fee: '' }
+          : {
+              ...createForm,
+              specialty_id: '',
+              work_experience_years: '',
+              appointment_fee: '',
+              avatar_file: null,
+            }
 
       const response = await createDoctorStaff(accessToken, payload)
       setSuccess(
@@ -179,6 +191,7 @@ export default function AdminUsersPage() {
               specialty_id: editForm.specialty_id,
               appointment_fee: editForm.appointment_fee,
               work_experience_years: Number(editForm.work_experience_years),
+              description: editForm.description,
               is_active: editForm.is_active,
             }
           : {
@@ -343,6 +356,10 @@ export default function AdminUsersPage() {
             onCreateChange={updateCreate}
             onEditChange={updateEdit}
             onFilesChange={onFiles}
+            onDownloadDocument={(fileID, fileName) => {
+              if (!accessToken) return
+              void downloadFile(accessToken, fileID, fileName)
+            }}
             onCancelEdit={() => setEditForm(null)}
           />
         </div>

@@ -51,6 +51,20 @@ export default function PatientLaboratoryOrdersSection({
                 </div>
               ) : null}
 
+              {order.reviewed_at || order.doctor_result_comment ? (
+                <div className="mt-4 rounded-2xl bg-sky-50 px-4 py-4 text-sm text-slate-700">
+                  <p className="font-semibold text-slate-900">Комментарий врача по результату</p>
+                  <p className="mt-2 whitespace-pre-line">
+                    {order.doctor_result_comment || 'Врач просмотрел результат анализа.'}
+                  </p>
+                  {order.reviewed_at ? (
+                    <p className="mt-2 text-slate-500">
+                      Просмотрено: {formatVisitDateTime(order.reviewed_at)}
+                    </p>
+                  ) : null}
+                </div>
+              ) : null}
+
               <div className="mt-5 space-y-3">
                 {order.items.map((item) => (
                   <div key={item.order_item_id} className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4">

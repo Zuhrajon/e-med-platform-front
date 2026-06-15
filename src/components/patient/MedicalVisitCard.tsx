@@ -1,4 +1,6 @@
 import { Calendar, Download, FileText, Pill, UserRound } from 'lucide-react'
+import type { LaboratoryOrder } from '../../lib/laboratory'
+import AvatarImage from '../common/AvatarImage'
 
 type Prescription = {
   id: string
@@ -29,6 +31,7 @@ export type MedicalVisit = {
       sizeBytes: number
       contentType: string
     }>
+    labOrders?: LaboratoryOrder[]
   }
 }
 
@@ -46,7 +49,7 @@ export default function MedicalVisitCard({
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-start gap-5">
           {visit.doctorPhotoUrl ? (
-            <img
+            <AvatarImage
               src={visit.doctorPhotoUrl}
               alt={visit.doctorName}
               className="h-18 w-18 shrink-0 rounded-full object-cover"

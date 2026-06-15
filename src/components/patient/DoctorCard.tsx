@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import type { DoctorListItem } from '../../lib/doctors'
 import { formatCurrency } from '../../routes/admin/admin-utils'
+import AvatarImage from '../common/AvatarImage'
 
 type DoctorCardProps = {
   doctor: DoctorListItem
@@ -19,7 +20,7 @@ export default function DoctorCard({ doctor }: DoctorCardProps) {
     <article className="rounded-[30px] border border-slate-200 bg-white px-6 py-6 shadow-[0_8px_24px_rgba(15,23,42,0.06)]">
       <div className="flex gap-4">
         {doctor.photoUrl ? (
-          <img
+          <AvatarImage
             src={doctor.photoUrl}
             alt={doctor.name}
             className="h-18 w-18 shrink-0 rounded-full object-cover"

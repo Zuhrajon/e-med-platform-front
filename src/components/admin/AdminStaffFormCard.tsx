@@ -1,6 +1,7 @@
-import { LoaderCircle, Upload } from 'lucide-react'
+import { Download, LoaderCircle, Upload } from 'lucide-react'
 import type { ChangeEvent, FormEvent } from 'react'
 import type { Specialty } from '../../lib/admin'
+import AvatarImage from '../common/AvatarImage'
 import AdminCard from './AdminCard'
 import {
   fileNames,
@@ -20,9 +21,10 @@ type AdminStaffFormCardProps = {
   onCreateChange: <K extends keyof CreateStaffForm>(key: K, value: CreateStaffForm[K]) => void
   onEditChange: <K extends keyof EditStaffForm>(key: K, value: EditStaffForm[K]) => void
   onFilesChange: (
-    key: 'passport_files' | 'diploma_files' | 'employment_record_files',
+    key: 'passport_files' | 'diploma_files' | 'employment_record_files' | 'avatar_file',
     event: ChangeEvent<HTMLInputElement>,
   ) => void
+  onDownloadDocument: (fileID: string, fileName: string) => void | Promise<void>
   onCancelEdit: () => void
 }
 
@@ -59,6 +61,7 @@ export default function AdminStaffFormCard({
   onCreateChange,
   onEditChange,
   onFilesChange,
+  onDownloadDocument,
   onCancelEdit,
 }: AdminStaffFormCardProps) {
   const isDoctorCreate = createForm.role === 'doctor'
@@ -95,6 +98,30 @@ export default function AdminStaffFormCard({
 
           {editForm.role === 'doctor' ? (
             <>
+              <div className="flex items-center gap-4 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4">
+                {editForm.avatar_url ? (
+                  <AvatarImage
+                    src={editForm.avatar_url}
+                    alt={editForm.full_name}
+                    className="h-16 w-16 rounded-full object-cover"
+                  />
+                ) : (
+                  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white text-lg font-semibold text-slate-900">
+                    {editForm.full_name
+                      .split(' ')
+                      .map((part) => part[0])
+                      .join('')
+                      .slice(0, 2) || 'В'}
+                  </div>
+                )}
+                <div>
+                  <p className="font-semibold text-slate-900">Фото врача</p>
+                  <p className="mt-1 text-sm text-slate-500">
+                    Фото меняется врачом в личном профиле.
+                  </p>
+                </div>
+              </div>
+
               <select
                 required
                 value={editForm.specialty_id}
@@ -129,6 +156,14 @@ export default function AdminStaffFormCard({
                 placeholder="Оплата / стоимость приёма"
                 className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-sky-500"
               />
+
+              <textarea
+                value={editForm.description}
+                onChange={(event) => onEditChange('description', event.target.value)}
+                rows={4}
+                placeholder="Описание врача"
+                className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-sky-500"
+              />
             </>
           ) : (
             <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 text-sm text-slate-600">
@@ -145,6 +180,33 @@ export default function AdminStaffFormCard({
             />
             Сотрудник активен
           </label>
+
+          {editForm.documents.length ? (
+            <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4">
+              <p className="text-sm font-semibold text-slate-900">Документы сотрудника</p>
+              <div className="mt-3 space-y-2">
+                {editForm.documents.map((document) => (
+                  <div
+                    key={`${document.document_type}-${document.file_id}`}
+                    className="flex flex-col gap-2 rounded-xl bg-white px-3 py-3 text-sm md:flex-row md:items-center md:justify-between"
+                  >
+                    <div>
+                      <p className="font-semibold text-slate-900">{document.file_name}</p>
+                      <p className="mt-1 text-slate-500">{document.document_type}</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => void onDownloadDocument(document.file_id, document.file_name)}
+                      className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-3 py-2 font-semibold text-slate-700 transition hover:bg-slate-50"
+                    >
+                      <Download className="h-4 w-4" />
+                      Скачать
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : null}
 
           <div className="flex flex-wrap gap-3">
             <button
@@ -318,6 +380,15 @@ export default function AdminStaffFormCard({
             files={createForm.employment_record_files}
             onChange={(event) => onFilesChange('employment_record_files', event)}
           />
+
+          {isDoctorCreate ? (
+            <FileField
+              label="Фото врача"
+              required={false}
+              files={createForm.avatar_file ? [createForm.avatar_file] : []}
+              onChange={(event) => onFilesChange('avatar_file', event)}
+            />
+          ) : null}
 
           <button
             type="submit"

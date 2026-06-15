@@ -3,7 +3,6 @@ import PatientLaboratoryOrdersSection from '../../components/laboratory/PatientL
 import MedicalVisitCard, { type MedicalVisit } from '../../components/patient/MedicalVisitCard'
 import ProtocolModal from '../../components/patient/ProtocolModal'
 import { useUser } from '../../context/UserContext'
-import { getCachedDoctorPhoto } from '../../lib/doctorPhoto'
 import { downloadFile } from '../../lib/files'
 import { listLaboratoryOrders, type LaboratoryOrder } from '../../lib/laboratory'
 import {
@@ -67,11 +66,12 @@ export default function MedicalBookPage() {
       records.map((record) => {
         const visit = visitMap.get(record.visit_id)
         const protocol = parseProtocolText(record.protocol_text)
+        const recordLabOrders = labOrders.filter((order) => order.visit_id === record.visit_id)
 
         return {
           id: record.record_id,
           doctorName: record.doctor_full_name,
-          doctorPhotoUrl: getCachedDoctorPhoto(record.doctor_user_id),
+          doctorPhotoUrl: record.doctor_avatar_url || '',
           specialty: visit?.specialty_name ?? 'Специальность не указана',
           date: formatVisitDateTime(visit?.scheduled_at ?? record.created_at),
           createdAt: formatVisitDateTime(record.created_at),
@@ -86,10 +86,11 @@ export default function MedicalBookPage() {
               sizeBytes: file.size_bytes,
               contentType: file.content_type,
             })),
+            labOrders: recordLabOrders,
           },
         }
       }),
-    [records, visitMap],
+    [labOrders, records, visitMap],
   )
 
   return (

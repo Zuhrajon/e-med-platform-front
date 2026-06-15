@@ -20,7 +20,19 @@ export type DoctorStaff = {
   specialty_name: string
   work_experience_years: number
   appointment_fee: string
+  description?: string
+  avatar_file_id?: string
+  avatar_url?: string
   is_active?: boolean
+}
+
+export type StaffDocument = {
+  document_type: string
+  file_id: string
+  file_name: string
+  content_type: string
+  size_bytes: number
+  download_url: string
 }
 
 export type StaffMember = {
@@ -36,7 +48,11 @@ export type StaffMember = {
   specialty_name: string
   work_experience_years: number
   appointment_fee: string
+  description?: string
+  avatar_file_id?: string
+  avatar_url?: string
   is_active: boolean
+  documents?: StaffDocument[]
 }
 
 export type Holiday = {
@@ -91,6 +107,34 @@ export type FakeDataDeleteResponse = {
   deleted_lab_test_types?: number
 }
 
+export type AdminDashboardStats = {
+  users: {
+    total: number
+    doctors: number
+    receptionists: number
+    laborants: number
+    patients: number
+    active_staff: number
+    inactive_staff: number
+    unverified_patients: number
+  }
+  visits: {
+    total: number
+    created: number
+    confirmed: number
+    completed: number
+    cancelled: number
+  }
+  laboratory: {
+    created: number
+    accepted: number
+    completed: number
+  }
+  catalogs: {
+    specialties: number
+  }
+}
+
 export type CreateStaffPayload = {
   role: 'doctor' | 'receptionist' | 'laborant'
   email: string
@@ -108,6 +152,7 @@ export type CreateStaffPayload = {
   passport_files: File[]
   diploma_files: File[]
   employment_record_files: File[]
+  avatar_file?: File | null
 }
 
 type RequestMethod = 'GET' | 'POST' | 'PATCH' | 'DELETE'
@@ -324,6 +369,9 @@ export function createDoctorStaff(token: string, payload: CreateStaffPayload) {
   payload.employment_record_files.forEach((file) => {
     formData.append('employment_record_files', file)
   })
+  if (payload.avatar_file) {
+    formData.append('avatar_file', payload.avatar_file)
+  }
 
   return adminRequest<{
     user_id: string
@@ -353,6 +401,7 @@ export function updateStaff(
     specialty_id?: string
     work_experience_years?: number
     appointment_fee?: string
+    description?: string
     is_active?: boolean
   },
 ) {
@@ -384,6 +433,10 @@ export function deleteStaff(token: string, userID: string) {
   return adminRequest<void>(`/api/v1/users/staff/${userID}`, token, {
     method: 'DELETE',
   })
+}
+
+export function getAdminDashboard(token: string) {
+  return adminRequest<AdminDashboardStats>('/api/v1/admin/dashboard', token)
 }
 
 export function getFakeData(token: string) {

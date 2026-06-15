@@ -5,9 +5,9 @@ import calendar from '../../assets/card-svg/calendar.svg'
 import clock from '../../assets/card-svg/clock.svg'
 import paper from '../../assets/card-svg/paper.svg'
 import person from '../../assets/card-svg/person.svg'
+import AvatarImage from '../../components/common/AvatarImage'
 import Recomendation from '../../components/patient/Recomendation'
 import { useUser } from '../../context/UserContext'
-import { getCachedDoctorPhoto } from '../../lib/doctorPhoto'
 import { getDoctors } from '../../lib/doctors'
 import {
   formatVisitDateTime,
@@ -29,7 +29,7 @@ export default function HomePage() {
     const loadDashboard = async () => {
       try {
         const [visitsResponse, doctorsResponse] = await Promise.all([
-          listVisits(accessToken),
+          listVisits(accessToken, { sort: 'scheduled_at_asc' }),
           getDoctors(accessToken),
         ])
 
@@ -139,7 +139,7 @@ export default function HomePage() {
             <div className="space-y-5">
               {upcomingVisits.slice(0, 4).map((visit) => {
                 const isConfirmed = visit.status === 'confirmed'
-                const doctorPhotoUrl = getCachedDoctorPhoto(visit.doctor_user_id)
+                const doctorPhotoUrl = visit.doctor_avatar_url || ''
                 const doctorInitials = visit.doctor_full_name
                   .split(' ')
                   .map((part) => part[0])
@@ -154,7 +154,7 @@ export default function HomePage() {
                     <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
                       <div className="flex min-w-0 gap-4">
                         {doctorPhotoUrl ? (
-                          <img
+                          <AvatarImage
                             src={doctorPhotoUrl}
                             alt={visit.doctor_full_name}
                             className="h-14 w-14 shrink-0 rounded-full object-cover"

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useLocation } from 'react-router-dom'
+import AvatarImage from '../../components/common/AvatarImage'
 import { useUser } from '../../context/UserContext'
-import { getCachedDoctorPhoto } from '../../lib/doctorPhoto'
 import {
   formatVisitDateTime,
   formatVisitTime,
@@ -56,7 +56,7 @@ export default function AppointmentsPage() {
     setError('')
 
     try {
-      const response = await listVisits(accessToken)
+      const response = await listVisits(accessToken, { sort: 'scheduled_at_asc' })
       setVisits(response.sort((a, b) => a.scheduled_at.localeCompare(b.scheduled_at)))
     } catch (loadError) {
       setError(loadError instanceof Error ? loadError.message : 'Не удалось загрузить записи')
@@ -168,7 +168,7 @@ export default function AppointmentsPage() {
   function renderVisitCard(visit: Visit) {
     const isPending = pendingVisitID === visit.visit_id
     const isRescheduleOpen = rescheduleVisitID === visit.visit_id
-    const doctorPhotoUrl = getCachedDoctorPhoto(visit.doctor_user_id)
+    const doctorPhotoUrl = visit.doctor_avatar_url || ''
     const doctorInitials = getInitials(visit.doctor_full_name)
 
     return (
@@ -179,7 +179,7 @@ export default function AppointmentsPage() {
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div className="flex min-w-0 gap-4">
             {doctorPhotoUrl ? (
-              <img
+              <AvatarImage
                 src={doctorPhotoUrl}
                 alt={visit.doctor_full_name}
                 className="h-16 w-16 shrink-0 rounded-full object-cover"

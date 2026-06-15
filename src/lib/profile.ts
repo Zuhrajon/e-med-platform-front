@@ -8,6 +8,8 @@ export type BackendDoctorProfile = {
   work_experience_years: number
   appointment_fee: string
   description: string
+  avatar_file_id: string
+  avatar_url: string
 }
 
 export type BackendProfile = {
@@ -53,6 +55,24 @@ export function updateMyProfile(accessToken: string, payload: UpdateProfilePaylo
   })
 }
 
+export function uploadMyAvatar(accessToken: string, file: File) {
+  const formData = new FormData()
+  formData.set('file', file)
+
+  return apiRequest<BackendProfile>('/api/v1/profile/me/avatar', {
+    method: 'POST',
+    token: accessToken,
+    body: formData,
+  })
+}
+
+export function deleteMyAvatar(accessToken: string) {
+  return apiRequest<BackendProfile>('/api/v1/profile/me/avatar', {
+    method: 'DELETE',
+    token: accessToken,
+  })
+}
+
 export function genderIdToLabel(genderId: number) {
   return genderId === 2 ? 'Женский' : 'Мужской'
 }
@@ -95,5 +115,6 @@ export function mergeUserProfileFromBackend(
     specialization: isDoctor ? profile.doctor_profile?.specialty_name || '' : '',
     qualification: isDoctor ? `${profile.doctor_profile?.work_experience_years ?? 0} лет стажа` : '',
     description: isDoctor ? profile.doctor_profile?.description || '' : '',
+    avatar: isDoctor ? profile.doctor_profile?.avatar_url || null : current.avatar,
   }
 }

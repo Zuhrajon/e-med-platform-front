@@ -36,10 +36,13 @@ export type LaboratoryOrder = {
   status: LaboratoryStatus
   doctor_comment: string
   laboratory_comment: string
+  doctor_result_comment: string
   accepted_by_user_id: string
   completed_by_user_id: string
+  reviewed_by_doctor_id: string
   accepted_at: string | null
   completed_at: string | null
+  reviewed_at: string | null
   created_at: string
   items: LaboratoryOrderItem[]
   result_files: LaboratoryOrderResultFile[]
@@ -166,6 +169,18 @@ export function completeLaboratoryOrder(
     completed_at: string | null
     laboratory_comment: string
   }>(`/api/v1/laboratory/orders/${orderID}/complete`, {
+    method: 'PATCH',
+    token: accessToken,
+    body: payload,
+  })
+}
+
+export function reviewLaboratoryOrder(
+  accessToken: string,
+  orderID: string,
+  payload: { doctor_result_comment: string },
+) {
+  return apiRequest<LaboratoryOrder>(`/api/v1/laboratory/orders/${orderID}/review`, {
     method: 'PATCH',
     token: accessToken,
     body: payload,

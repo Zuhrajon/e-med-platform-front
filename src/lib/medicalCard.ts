@@ -13,6 +13,8 @@ export type MedicalCardRecord = {
   visit_id: string
   doctor_user_id: string
   doctor_full_name: string
+  doctor_avatar_file_id?: string
+  doctor_avatar_url?: string
   protocol_text: string
   created_at: string
   files: MedicalCardFile[]

@@ -3,14 +3,15 @@ import ProfileDetailsSection, {
   type ProfileFormState,
 } from '../../components/account/ProfileDetailsSection'
 import SecuritySettingsSection from '../../components/account/SecuritySettingsSection'
+import AvatarImage from '../../components/common/AvatarImage'
 import { useUser } from '../../context/UserContext'
 import { saveCachedDoctorDescription } from '../../lib/doctorDescription'
 import {
-  getCachedDoctorPhoto,
-  removeCachedDoctorPhoto,
-  saveCachedDoctorPhoto,
-} from '../../lib/doctorPhoto'
-import { genderLabelToId, updateMyProfile } from '../../lib/profile'
+  deleteMyAvatar,
+  genderLabelToId,
+  updateMyProfile,
+  uploadMyAvatar,
+} from '../../lib/profile'
 
 function buildForm(user: ReturnType<typeof useUser>['user']): ProfileFormState {
   return {
@@ -34,7 +35,6 @@ export default function DoctorProfilePage() {
   const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
-  const [photoUrl, setPhotoUrl] = useState(() => getCachedDoctorPhoto(user.userId || ''))
 
   useEffect(() => {
     if (!isEditing) {
@@ -42,18 +42,14 @@ export default function DoctorProfilePage() {
     }
   }, [user, isEditing])
 
-  useEffect(() => {
-    setPhotoUrl(getCachedDoctorPhoto(user.userId || ''))
-  }, [user.userId])
-
   function handleChange(field: keyof ProfileFormState, value: string) {
     setForm((prev) => ({ ...prev, [field]: value }))
   }
 
-  function handlePhotoChange(event: ChangeEvent<HTMLInputElement>) {
+  async function handlePhotoChange(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0]
     event.target.value = ''
-    if (!file || !user.userId) return
+    if (!file || !accessToken) return
 
     if (!file.type.startsWith('image/')) {
       setError('Выберите файл изображения.')
@@ -67,32 +63,35 @@ export default function DoctorProfilePage() {
       return
     }
 
-    const reader = new FileReader()
-    reader.onload = () => {
-      const result = typeof reader.result === 'string' ? reader.result : ''
-      if (!result) return
-
-      saveCachedDoctorPhoto(user.userId || '', result)
-      setPhotoUrl(result)
-      updateUser({ avatar: result })
+    setIsSaving(true)
+    try {
+      const profile = await uploadMyAvatar(accessToken, file)
+      updateUser({ avatar: profile.doctor_profile?.avatar_url || null })
       setError('')
       setSuccess('Фото профиля обновлено.')
-    }
-    reader.onerror = () => {
-      setError('Не удалось загрузить фото.')
+    } catch (uploadError) {
+      setError(uploadError instanceof Error ? uploadError.message : 'Не удалось загрузить фото.')
       setSuccess('')
+    } finally {
+      setIsSaving(false)
     }
-    reader.readAsDataURL(file)
   }
 
-  function handleRemovePhoto() {
-    if (!user.userId) return
+  async function handleRemovePhoto() {
+    if (!accessToken) return
 
-    removeCachedDoctorPhoto(user.userId)
-    setPhotoUrl('')
-    updateUser({ avatar: null })
-    setError('')
-    setSuccess('Фото профиля удалено.')
+    setIsSaving(true)
+    try {
+      const profile = await deleteMyAvatar(accessToken)
+      updateUser({ avatar: profile.doctor_profile?.avatar_url || null })
+      setError('')
+      setSuccess('Фото профиля удалено.')
+    } catch (deleteError) {
+      setError(deleteError instanceof Error ? deleteError.message : 'Не удалось удалить фото.')
+      setSuccess('')
+    } finally {
+      setIsSaving(false)
+    }
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -164,9 +163,9 @@ export default function DoctorProfilePage() {
         <section className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
           <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
             <div className="flex items-center gap-4">
-              {photoUrl ? (
-                <img
-                  src={photoUrl}
+              {user.avatar ? (
+                <AvatarImage
+                  src={user.avatar}
                   alt="Фото врача"
                   className="h-20 w-20 rounded-full object-cover"
                 />
@@ -199,7 +198,7 @@ export default function DoctorProfilePage() {
                 />
               </label>
 
-              {photoUrl ? (
+              {user.avatar ? (
                 <button
                   type="button"
                   onClick={handleRemovePhoto}

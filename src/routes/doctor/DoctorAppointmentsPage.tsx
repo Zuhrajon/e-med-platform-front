@@ -8,6 +8,7 @@ import {
   createLaboratoryOrder,
   listLaboratoryOrders,
   listLaboratoryTestTypes,
+  reviewLaboratoryOrder,
   type LaboratoryOrder,
   type LaboratoryTestType,
 } from '../../lib/laboratory'
@@ -50,13 +51,21 @@ const emptyProtocol: ProtocolFormState = {
   recommendations: '',
 }
 
-function mapRecordToProtocolVisit(record: MedicalCardRecord, visits: Visit[]): MedicalVisit {
+function mapRecordToProtocolVisit(
+  record: MedicalCardRecord,
+  visits: Visit[],
+  labOrders: LaboratoryOrder[],
+): MedicalVisit {
   const linkedVisit = visits.find((visit) => visit.visit_id === record.visit_id)
   const protocol = parseProtocolText(record.protocol_text)
+  const recordLabOrders = labOrders.filter(
+    (order) => order.visit_id === record.visit_id && order.status === 'completed',
+  )
 
   return {
     id: record.record_id,
     doctorName: record.doctor_full_name,
+    doctorPhotoUrl: record.doctor_avatar_url || '',
     specialty: linkedVisit?.specialty_name ?? 'Прошлый приём',
     date: formatVisitDateTime(linkedVisit?.scheduled_at ?? record.created_at),
     createdAt: formatVisitDateTime(record.created_at),
@@ -71,6 +80,7 @@ function mapRecordToProtocolVisit(record: MedicalCardRecord, visits: Visit[]): M
         sizeBytes: file.size_bytes,
         contentType: file.content_type,
       })),
+      labOrders: recordLabOrders,
     },
   }
 }
@@ -103,6 +113,7 @@ export default function DoctorAppointmentsPage() {
   const [labOrders, setLabOrders] = useState<LaboratoryOrder[]>([])
   const [labTestTypes, setLabTestTypes] = useState<LaboratoryTestType[]>([])
   const [labSubmittingVisitID, setLabSubmittingVisitID] = useState<string | null>(null)
+  const [labReviewingOrderID, setLabReviewingOrderID] = useState<string | null>(null)
 
   async function loadVisits(targetDate = selectedDate) {
     if (!accessToken) return
@@ -113,6 +124,7 @@ export default function DoctorAppointmentsPage() {
     try {
       const response = await listVisits(accessToken, {
         date: targetDate || undefined,
+        sort: 'scheduled_at_desc',
       })
       setVisits(response.sort((a, b) => b.scheduled_at.localeCompare(a.scheduled_at)))
     } catch (loadError) {
@@ -273,6 +285,32 @@ export default function DoctorAppointmentsPage() {
       )
     } finally {
       setLabSubmittingVisitID(null)
+    }
+  }
+
+  async function handleReviewLaboratoryOrder(orderID: string, doctorResultComment: string) {
+    if (!accessToken) return
+
+    setLabReviewingOrderID(orderID)
+    setError('')
+    setSuccess('')
+
+    try {
+      const reviewedOrder = await reviewLaboratoryOrder(accessToken, orderID, {
+        doctor_result_comment: doctorResultComment,
+      })
+      setLabOrders((prev) =>
+        prev.map((item) => (item.order_id === reviewedOrder.order_id ? reviewedOrder : item)),
+      )
+      setSuccess('Результат анализа отмечен как просмотренный.')
+    } catch (reviewError) {
+      setError(
+        reviewError instanceof Error
+          ? reviewError.message
+          : 'Не удалось отметить результат анализа',
+      )
+    } finally {
+      setLabReviewingOrderID(null)
     }
   }
 
@@ -555,6 +593,8 @@ export default function DoctorAppointmentsPage() {
                           canCreate={visit.status === 'confirmed'}
                           isSubmitting={labSubmittingVisitID === visit.visit_id}
                           onCreateOrder={handleCreateLaboratoryOrder}
+                          onReviewOrder={handleReviewLaboratoryOrder}
+                          reviewPendingOrderID={labReviewingOrderID}
                         />
                         {isRecordLoading ? (
                           <p className="mt-5 text-sm text-slate-500">Загрузка медицинской записи...</p>
@@ -834,7 +874,9 @@ export default function DoctorAppointmentsPage() {
                             <button
                               type="button"
                               onClick={() =>
-                                setSelectedProtocol(mapRecordToProtocolVisit(record, activeHistoryVisits))
+                                setSelectedProtocol(
+                                  mapRecordToProtocolVisit(record, activeHistoryVisits, labOrders),
+                                )
                               }
                               className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-sky-200 hover:bg-sky-50 hover:text-sky-700"
                             >

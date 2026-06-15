@@ -32,7 +32,7 @@ export default function ReceptionVisitsPage() {
   const [selectedSlot, setSelectedSlot] = useState('')
   const [isSlotsLoading, setIsSlotsLoading] = useState(false)
 
-  async function loadVisits(nextStatus = statusFilter) {
+  async function loadVisits(nextStatus = statusFilter, nextSearch = search) {
     if (!accessToken) return
 
     setIsLoading(true)
@@ -41,8 +41,10 @@ export default function ReceptionVisitsPage() {
     try {
       const response = await listVisits(accessToken, {
         status: nextStatus || undefined,
+        search: nextSearch.trim() || undefined,
+        sort: 'scheduled_at_desc',
       })
-      setVisits(response.sort((a, b) => a.created_at.localeCompare(b.created_at)).reverse())
+      setVisits(response)
     } catch (loadError) {
       setError(loadError instanceof Error ? loadError.message : 'Не удалось загрузить записи')
     } finally {
@@ -190,7 +192,10 @@ export default function ReceptionVisitsPage() {
         <div className="grid gap-4 lg:grid-cols-[1fr_220px]">
           <input
             value={search}
-            onChange={(event) => setSearch(event.target.value)}
+            onChange={(event) => {
+              setSearch(event.target.value)
+              void loadVisits(statusFilter, event.target.value)
+            }}
             placeholder="Поиск по пациенту, номеру, врачу или специальности"
             className="rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-sky-500"
           />

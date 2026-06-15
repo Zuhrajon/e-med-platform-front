@@ -1,4 +1,5 @@
 import { Calendar, Clock } from 'lucide-react'
+import AvatarImage from '../common/AvatarImage'
 
 export type UpcomingAppointmentItem = {
   id: string
@@ -81,7 +82,7 @@ export default function UpcomingAppointments({
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex items-start gap-5">
                     {appointment.doctorPhotoUrl ? (
-                      <img
+                      <AvatarImage
                         src={appointment.doctorPhotoUrl}
                         alt={appointment.doctorName}
                         className="h-16 w-16 shrink-0 rounded-full object-cover"

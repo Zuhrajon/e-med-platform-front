@@ -136,20 +136,31 @@ export default function LaboratoryOrdersPage() {
     }
   }
 
-  async function handleUploadFiles(orderID: string, files: File[]) {
-    if (!accessToken || !files.length) return
+  async function handleCompleteWithFiles(
+    orderID: string,
+    payload: CompleteLaboratoryOrderPayload,
+    files: File[],
+  ) {
+    if (!accessToken) return
 
     setCompleteOrderID(orderID)
     setError('')
     setSuccess('')
 
     try {
-      await addLaboratoryOrderFiles(accessToken, orderID, files)
-      setSuccess('Файлы результатов загружены.')
-      await refreshSelectedOrder(orderID)
+      if (files.length) {
+        await addLaboratoryOrderFiles(accessToken, orderID, files)
+      }
+      await completeLaboratoryOrder(accessToken, orderID, payload)
+      setSuccess('Результаты анализов и файлы сохранены.')
       await loadOrders(statusFilter)
-    } catch (uploadError) {
-      setError(uploadError instanceof Error ? uploadError.message : 'Не удалось загрузить файлы результатов')
+      await refreshSelectedOrder(orderID)
+    } catch (actionError) {
+      setError(
+        actionError instanceof Error
+          ? actionError.message
+          : 'Не удалось сохранить результаты анализов и файлы',
+      )
     } finally {
       setCompleteOrderID(null)
     }
@@ -198,7 +209,7 @@ export default function LaboratoryOrdersPage() {
           completeOrderID={completeOrderID}
           onAccept={handleAccept}
           onComplete={handleComplete}
-          onUploadFiles={handleUploadFiles}
+          onCompleteWithFiles={handleCompleteWithFiles}
           onDownloadFile={handleDownloadFile}
         />
       </section>
